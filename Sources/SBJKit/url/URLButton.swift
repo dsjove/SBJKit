@@ -20,9 +20,9 @@ public struct URLButton: View {
 					.aspectRatio(1.0, contentMode: .fit)
 					.frame(width: 24, height: 24)
 			} else {
-			Label("Link", systemImage: "link.circle")
-				.imageScale(.large)
-				.foregroundStyle(url?.isValidURL ?? false ? .blue : .red)
+				Label("Link", systemImage: "link.circle")
+					.imageScale(.large)
+					.foregroundStyle(url?.isValidURL ?? false ? .blue : .red)
 			}
 		}
 		.labelStyle(.iconOnly)

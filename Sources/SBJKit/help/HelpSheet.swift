@@ -91,7 +91,6 @@ fileprivate struct HelpWebView: UIViewRepresentable {
 
 	private class StateHolder {
 		var lastLoadedAsset: AssetPath?
-		var lastLoadedSubstitutionsHash: Int?
 	}
 	private static var stateKey: UInt8 = 0
 
@@ -112,7 +111,7 @@ fileprivate struct HelpWebView: UIViewRepresentable {
 	func updateUIView(_ uiView: WKWebView, context: Context) {
 		guard let state = objc_getAssociatedObject(uiView, &HelpWebView.stateKey) as? StateHolder else { return }
 		let substitutionsHash = substitutions.hashValue
-		if asset != state.lastLoadedAsset || substitutionsHash != state.lastLoadedSubstitutionsHash {
+		if asset != state.lastLoadedAsset {
 			if let htmlString = asset.stringValue()  {
 				let allSubstitutions = substitutions.merging(
 					extractImageSubstitutions(from: htmlString)) { (_, new) in new }
@@ -123,7 +122,6 @@ fileprivate struct HelpWebView: UIViewRepresentable {
 				uiView.loadHTMLString(errorHTML, baseURL: nil)
 			}
 			state.lastLoadedAsset = asset
-			state.lastLoadedSubstitutionsHash = substitutionsHash
 			DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
 				uiView.scrollView.flashScrollIndicators()
 			}

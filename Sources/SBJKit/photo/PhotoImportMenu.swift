@@ -9,19 +9,24 @@ fileprivate class PhotoMenuState: ObservableObject {
 	@Published var importedImage: UIImage? = nil
 }
 
-public struct PhotoMenuView: View {
+public struct PhotoImportMenu: View {
 	public struct MenuOptions: OptionSet, Sendable {
 		public let rawValue: Int
-		
+
+		// Importing
 		public static let photos = MenuOptions(rawValue: 1 << 0)
 		public static let camera = MenuOptions(rawValue: 1 << 1)
 		public static let files = MenuOptions(rawValue: 1 << 2)
 		public static let paste = MenuOptions(rawValue: 1 << 3)
+		// Editing
 		public static let edit = MenuOptions(rawValue: 1 << 4)
 		public static let clear = MenuOptions(rawValue: 1 << 5)
-		
+		// Viewing
+		// TODO: 'Share': ShareButton currently cannot work from a menu
+		// TODO: 'View': needs more context in callbacks
+
 		public static let all: MenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
-		
+
 		public init(rawValue: Int) {
 			self.rawValue = rawValue
 		}

@@ -1,11 +1,10 @@
 import SwiftUI
 import PencilKit
 
-// TODO: refactor so PhotoCropperSheet manages navigationStack/toolbars and created a view called PhotoCropperView that handles everything else.
-public struct PhotoCropperSheet: View {
-	@Environment(\.dismiss) private var dismiss
+public struct PhotoEditSheet: View {
 	let image: UIImage?
-	let result: ((UIImage?) -> Void)?
+	let edited: ((UIImage?) -> Void)?
+	let dismiss: (() -> Void)?
 	let inset: Double
 	let opacity: Double
 
@@ -17,22 +16,25 @@ public struct PhotoCropperSheet: View {
 
 	public init(
 			image: UIImage?,
-			result: ((UIImage?) -> Void)?,
+			edited: ((UIImage?) -> Void)?,
+			dismiss: (() -> Void)? = nil,
 			fill: Bool = true,
 			maxScale: Double = 8.0,
 			inset: Double = 16,
 			opacity: Double = 0.4) {
 		self.image = image
-		self.result = result
+		self.edited = edited
+		self.dismiss = dismiss
 		self.inset = inset
 		self.opacity = opacity
 		self._transform = State(initialValue: .init(fill: fill, maxScale: maxScale))
 	}
 
-	public init(viewing image: UIImage?) {
+	public init(viewing image: UIImage?, dismiss: (()->())? = nil) {
 		self = .init(
 			image: image,
-			result: nil,
+			edited: nil,
+			dismiss: dismiss,
 			fill: false,
 			maxScale: 8.0,
 			inset: 0.0,
@@ -43,7 +45,7 @@ public struct PhotoCropperSheet: View {
 		NavigationStack {
 			GeometryReader { geometry in
 				let cropRect = calcCropRect(geometry.size)
-                ZStack {
+				ZStack {
 					Group {
 						if showMarkup {
 							CroppedImagePreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
@@ -84,21 +86,21 @@ public struct PhotoCropperSheet: View {
 				.toolbar {
 					ToolbarItemGroup(placement: .topBarLeading) {
 						DismissButton {
-							let finalImage = renderWithMarkup(image, cropRect: cropRect)
-							if let result {
-								result(finalImage)
+							if let edited {
+								let finalImage = renderWithMarkup(image, cropRect: cropRect)
+								edited(finalImage)
 							}
-							dismiss()
+							dismiss?()
 						}
-						if let result {
+						if let edited {
 							CancelButton {
-								result(nil)
-								dismiss()
+								edited(nil)
+								dismiss?()
 							}
 						}
 					}
 					ToolbarItemGroup(placement: .topBarTrailing) {
-						if result != nil {
+						if edited != nil {
 							if showMarkup {
 								ActionButton("Clear", image: "eraser") {
 									canvasView.drawing = PKDrawing()
@@ -129,7 +131,7 @@ public struct PhotoCropperSheet: View {
 								([image].compactMap { $0 }, nil)
 							}
 						}
-						HelpButton(asset: .init(title: result != nil ? "Edit Photo" : "View Photo", folder: "help", mainBundle: false))
+						//HelpButton(asset: .init(title: edited != nil ? "Edit Photo" : "View Photo", folder: "help", mainBundle: false))
 					}
 				}
 			}
@@ -162,7 +164,7 @@ public struct PhotoCropperSheet: View {
 	}
 
 	func calcCropRect(_ size: CGSize) -> CGRect {
-		if result != nil {
+		if edited != nil {
 			let minLength = min(size.width, size.height)
 			return CGRect(
 				x: (size.width - minLength) / 2 + inset,

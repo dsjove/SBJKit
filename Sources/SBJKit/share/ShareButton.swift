@@ -13,6 +13,7 @@ public struct ShareButton: View {
 		ActionButton("Share", image: "square.and.arrow.up") {
 			self.showingShareSheet.toggle()
 		}
+		//TODO: if button is transitory this will never show
 		.sheet(isPresented: $showingShareSheet) {
 			let p = items()
 			ShareSheet(activityItems: p.activityItems, applicationActivities: p.applicationActivities)

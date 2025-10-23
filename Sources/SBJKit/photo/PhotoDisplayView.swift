@@ -11,7 +11,7 @@ public protocol PhotoDisplayable: AnyObject {
 public struct PhotoDisplayView<Item: PhotoDisplayable>: View {
 	let item: Item
 	let showMenu: Bool
-	@State private var croppingImage: IdentifiableImage?
+	@State private var editingImage: IdentifiableImage?
 	@State private var viewingImage: IdentifiableImage?
 
 	public init(item: Item, showMenu: Bool = true) {
@@ -31,12 +31,12 @@ public struct PhotoDisplayView<Item: PhotoDisplayable>: View {
 				item.displayView
 			}
 			if showMenu {
-				PhotoMenuView(image: Binding {
+				PhotoImportMenu(image: Binding {
 					item.uiImage
 				} set: { newImage in
-					if let newImage {
-						croppingImage = IdentifiableImage(image: newImage)
-					} else {
+					if let newImage { // imported or editing
+						editingImage = IdentifiableImage(image: newImage)
+					} else { // clear
 						item.uiImage = nil
 					}
 				})
@@ -54,16 +54,20 @@ public struct PhotoDisplayView<Item: PhotoDisplayable>: View {
 			}
 		}
 		.clipShape(RoundedRectangle(cornerRadius: 12))
-		.fullScreenCover(item: $croppingImage) { identifiable in
-			PhotoCropperSheet(image: identifiable.image) { result in
+		.fullScreenCover(item: $editingImage) { identifiable in
+			PhotoEditSheet(image: identifiable.image) { result in
 				if let cropped = result {
 					item.uiImage = cropped
-				}
-				croppingImage = nil
+				} // else canceled
+			}
+			dismiss: {
+				editingImage = nil
 			}
 		}
 		.fullScreenCover(item: $viewingImage) { identifiable in
-			PhotoCropperSheet(viewing: identifiable.image)
+			PhotoEditSheet(viewing: identifiable.image) {
+				viewingImage = nil
+			}
 		}
 	}
 }

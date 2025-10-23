@@ -111,7 +111,7 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 				}
 				ToolbarItemGroup(placement: .topBarTrailing) {
 					AddButton("Tag", add: addTag)
-					HelpButton(asset: .init(title: "Edit Tags", folder: "help", mainBundle: false))
+					//HelpButton(asset: .init(title: "Edit Tags", folder: "help", mainBundle: false))
 				}
 			}
 			.sheet(item: $editColorTag) { tag in
