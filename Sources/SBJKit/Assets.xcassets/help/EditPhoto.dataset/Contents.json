@@ -2,7 +2,8 @@
   "data" : [
     {
       "filename" : "index.html",
-      "idiom" : "universal"
+      "idiom" : "universal",
+      "universal-type-identifier" : "text.html"
     }
   ],
   "info" : {

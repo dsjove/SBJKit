@@ -1,6 +1,6 @@
 import Foundation
 
-protocol CodableEnum:
+public protocol CodableEnum:
 	RawRepresentable,
 	CaseIterable,
 	Codable,
@@ -8,13 +8,13 @@ protocol CodableEnum:
 	Comparable {
 }
 
-extension CodableEnum where RawValue: Hashable {
+public extension CodableEnum where RawValue: Hashable {
 	var id: RawValue {
 		rawValue
 	}
 }
 
-extension CodableEnum where RawValue: Comparable {
+public extension CodableEnum where RawValue: Comparable {
 	static func == (lhs: Self, rhs: Self) -> Bool {
 		lhs.rawValue == rhs.rawValue
 	}
@@ -24,7 +24,7 @@ extension CodableEnum where RawValue: Comparable {
 	}
 }
 
-extension CodableEnum where Self: CustomStringConvertible, RawValue == String {
+public extension CodableEnum where Self: CustomStringConvertible, RawValue == String {
 	var description: String {
 		rawValue.capitalized
 	}
