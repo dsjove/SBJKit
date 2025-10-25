@@ -38,7 +38,7 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 										.frame(width: 44, height: 44)
 										.cornerRadius(8.0)
 										.onTapGesture {
-											//editColorTag = tag
+											editColorTag = tag
 										}
 									TextField("Name", text: Binding(
 										get: { tag.name },
