@@ -115,6 +115,14 @@ public struct PhotoEditSheet: View {
 									drawing = canvasView.drawing
 								}
 							} else {
+								if let image {
+									ActionButton("Flip", image: "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right") {
+										transform.flip(imgSize: image.size, cropping: cropRect)
+									}
+									ActionButton("Rotate", image: "rotate.left") {
+										transform.rotate(imgSize: image.size, cropping: cropRect)
+									}
+								}
 								ActionButton("Reset", image: "inset.filled.square.dashed") {
 									reset(cropRect)
 								}
@@ -398,4 +406,5 @@ fileprivate struct RotateActionButton: View {
 	}
 }
 */
+
 

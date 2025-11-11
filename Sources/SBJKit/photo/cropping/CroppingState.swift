@@ -56,10 +56,18 @@ public struct CroppingState {
 		let renderScale = min(cropping.width / imgSize.width, cropping.height / imgSize.height)
 		let w = imgSize.width * renderScale * scale
 		let h = imgSize.height * renderScale * scale
-		let minX = min(0, (cropping.width - w) / 2)
-		let maxX = max(0, (w - cropping.width) / 2)
-		let minY = min(0, (cropping.height - h) / 2)
-		let maxY = max(0, (h - cropping.height) / 2)
+		
+		// Compute bounding box of rotated image
+		let angle = CGFloat(rotation.radians)
+		let cosA = abs(cos(angle))
+		let sinA = abs(sin(angle))
+		let rotatedW = w * cosA + h * sinA
+		let rotatedH = w * sinA + h * cosA
+		
+		let minX = min(0, (cropping.width - rotatedW) / 2)
+		let maxX = max(0, (rotatedW - cropping.width) / 2)
+		let minY = min(0, (cropping.height - rotatedH) / 2)
+		let maxY = max(0, (rotatedH - cropping.height) / 2)
 		let x = max(min(test.width, maxX), minX)
 		let y = max(min(test.height, maxY), minY)
 		self.offset = CGSize(width: x, height: y)
@@ -118,6 +126,63 @@ public struct CroppingState {
 		lastScale = scale
 		lastRotation = rotation
 	}
+
+	public mutating func rotate(clockwise: Bool = false, imgSize: CGSize, cropping: CGRect) {
+		// Preserve crop center focus by adjusting offset based on rotation
+
+		// 1. Calculate the center point of the cropping rect
+		let cropCenter = CGPoint(x: cropping.width / 2, y: cropping.height / 2)
+
+		// 2. Compute current image size and center in the crop coordinate space
+		let renderScale = min(cropping.width / imgSize.width, cropping.height / imgSize.height)
+		let w = imgSize.width * renderScale * scale
+		let h = imgSize.height * renderScale * scale
+		let x = (cropping.width - w) / 2 + offset.width
+		let y = (cropping.height - h) / 2 + offset.height
+		let imageCenterInCrop = CGPoint(x: x + w / 2, y: y + h / 2)
+
+		// 3. Compute the vector from crop center to image center
+		let vector = CGPoint(x: imageCenterInCrop.x - cropCenter.x, y: imageCenterInCrop.y - cropCenter.y)
+
+		// 4. Rotate this vector by ±90 degrees (depending on clockwise)
+		let angle = clockwise ? Double.pi / 2 : -Double.pi / 2
+		let rotatedVector = CGPoint(
+			x: vector.x * CoreGraphics.cos(angle) - vector.y * CoreGraphics.sin(angle),
+			y: vector.x * CoreGraphics.sin(angle) + vector.y * CoreGraphics.cos(angle)
+		)
+
+		// 5. Compute the new image center after rotation
+		let newImageCenter = CGPoint(x: cropCenter.x + rotatedVector.x, y: cropCenter.y + rotatedVector.y)
+
+		// 6. Update the offset so that image remains centered on the new rotated position
+		// Note: width and height swap roles due to rotation of 90 degrees
+		let newOffset = CGSize(
+			width: newImageCenter.x - (cropping.width - h) / 2 - w / 2,
+			height: newImageCenter.y - (cropping.height - w) / 2 - h / 2
+		)
+		offset = newOffset
+		lastOffset = offset
+
+		// Perform the rotation increment and clamp offset accordingly
+		rotation += .init(degrees: clockwise ? 90 : -90)
+		self.cropping = cropping
+		setClampedOffset(imgSize: imgSize, offset)
+	}
+
+	public mutating func flip(horizontal: Bool = true, imgSize: CGSize, cropping: CGRect) {
+		if horizontal {
+			let newOffset = CGSize(width: -offset.width, height: offset.height)
+			flipX.toggle()
+			offset = newOffset
+		} else {
+			let newOffset = CGSize(width: offset.width, height: -offset.height)
+			flipY.toggle()
+			offset = newOffset
+		}
+		lastOffset = offset
+		self.cropping = cropping
+		setClampedOffset(imgSize: imgSize, offset)
+	}
 /*
 	public mutating func apply(_ value: CroppingGesture.Value, imgSize: CGSize, cropping: CGRect, anchor: CGPoint? = nil) {
 		applyOffset(imgSize: imgSize, value.translation, cropping: cropping)
@@ -125,8 +190,12 @@ public struct CroppingState {
 		rotation = lastRotation + value.rotation
 	}
 */
-	public mutating func flipHorizontally() { flipX.toggle() }
-	public mutating func flipVertically() { flipY.toggle() }
+	public mutating func flipHorizontally(imgSize: CGSize, cropping: CGRect) {
+		flip(horizontal: true, imgSize: imgSize, cropping: cropping)
+	}
+	public mutating func flipVertically(imgSize: CGSize, cropping: CGRect) {
+		flip(horizontal: false, imgSize: imgSize, cropping: cropping)
+	}
 
 	public func render(_ image: UIImage?) -> UIImage? {
 		let squareSize = min(cropping.width, cropping.height)
@@ -138,20 +207,21 @@ public struct CroppingState {
 		let h = imgSize.height * renderScale * scale
 		let x = (square - w) / 2 + offset.width
 		let y = (square - h) / 2 + offset.height
+		let centerX = x + w / 2
+		let centerY = y + h / 2
 		let renderer = UIGraphicsImageRenderer(size: CGSize(width: square, height: square))
 		return renderer.image { ctx in
 			ctx.cgContext.setFillColor(UIColor.black.cgColor)
 			ctx.cgContext.fill(CGRect(origin: .zero, size: CGSize(width: square, height: square)))
 
-			// Apply flipping and rotation about center
-			ctx.cgContext.translateBy(x: square / 2, y: square / 2)
+			// Apply flipping and rotation about center of drawn image rect
+			ctx.cgContext.translateBy(x: centerX, y: centerY)
 			if flipX { ctx.cgContext.scaleBy(x: -1, y: 1) }
 			if flipY { ctx.cgContext.scaleBy(x: 1, y: -1) }
 			ctx.cgContext.rotate(by: CGFloat(rotation.radians))
-			ctx.cgContext.translateBy(x: -square / 2, y: -square / 2)
+			ctx.cgContext.translateBy(x: -centerX, y: -centerY)
 
 			image.draw(in: CGRect(x: x, y: y, width: w, height: h))
 		}
 	}
 }
-
