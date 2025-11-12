@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct CroppedImagePreview: View {
+public struct GeometryTransformPreview: View {
 	private let image: UIImage?
 	private let transform: CroppingState
 	private let cropRect: CGRect?
@@ -20,15 +20,15 @@ public struct CroppedImagePreview: View {
 				if transform.fill {
 					if opacity > 0.0 {
 						Image(uiImage: image)
-							.croppingStyle(transform, cropRect)
+							.geometryEffect(transform, cropRect)
 							.opacity(opacity)
 					}
 					Image(uiImage: image)
-						.croppingStyle(transform, cropRect)
+						.geometryEffect(transform, cropRect)
 						.clipped()
 				} else {
 					Image(uiImage: image)
-						.croppingStyle(transform, cropRect)
+						.geometryEffect(transform, cropRect)
 				}
 			} else {
 				Image(systemName: "photo")

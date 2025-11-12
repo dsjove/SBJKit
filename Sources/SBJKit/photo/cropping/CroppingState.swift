@@ -1,20 +1,20 @@
 import SwiftUI
 
-public struct CroppingState {
-	public var userGestured: Bool = false
-	public var cropping: CGRect = .zero
-
+public struct CroppingState: GeometryTransform {
 	public let fill: Bool
 	public let maxScale: Double
+
 	public private(set) var offset: CGSize = .zero
 	public private(set) var scale: CGFloat = 1.0
-	public private(set) var lastOffset: CGSize = .zero
-	public private(set) var lastScale: CGFloat = 1.0
-	
 	public private(set) var rotation: Angle = .zero
-	public private(set) var lastRotation: Angle = .zero
 	public private(set) var flipX: Bool = false
 	public private(set) var flipY: Bool = false
+
+	public private(set) var cropping: CGRect = .zero
+
+	public private(set) var userGestured: Bool = false
+	public private(set) var lastOffset: CGSize = .zero
+	public private(set) var lastScale: CGFloat = 1.0
 
 	public init(fill: Bool, maxScale: Double) {
 		self.fill = fill
@@ -33,13 +33,13 @@ public struct CroppingState {
 		setClampedScale(imgSize: imgSize, 0, fill: fill)
 		endScale()
 		rotation = .zero
-		lastRotation = .zero
 		flipX = false
 		flipY = false
 	}
 
-	public mutating func applyOffset(imgSize: CGSize, _ value: CGSize, cropping: CGRect) {
+	public mutating func onDrag(imgSize: CGSize, _ value: CGSize, cropping: CGRect) {
 		self.cropping = cropping
+		self.userGestured = true
 		let test = CGSize(width: lastOffset.width + value.width, height: lastOffset.height + value.height)
 		if fill {
 			setClampedOffset(imgSize: imgSize, test)
@@ -47,6 +47,10 @@ public struct CroppingState {
 		else {
 			self.offset = test
 		}
+	}
+
+	public mutating func endDrag() {
+		lastOffset = offset
 	}
 
 	private mutating func setClampedOffset(imgSize: CGSize, _ test: CGSize) {
@@ -72,8 +76,9 @@ public struct CroppingState {
 
 	/// Applies a scale change centered on an optional anchor point.
 	/// If an anchor is provided, offset is adjusted so that the anchor point remains fixed under the scaled image.
-	public mutating func applyScale(imgSize: CGSize, _ value: CGFloat, cropping: CGRect, anchor: CGPoint? = nil) {
+	public mutating func onScale(imgSize: CGSize, _ value: CGFloat, cropping: CGRect, anchor: CGPoint? = nil) {
 		self.cropping = cropping
+		self.userGestured = true
 		let test = lastScale * value
 		// If anchor is provided, adjust offset so anchor remains under gesture
 		if let anchor = anchor {
@@ -100,6 +105,11 @@ public struct CroppingState {
 		}
 	}
 
+	public mutating func endScale() {
+		lastOffset = offset
+		lastScale = scale
+	}
+
 	private mutating func setClampedScale(imgSize: CGSize, _ value: CGFloat, fill: Bool = true) {
 		if fill {
 			let renderScale = min(cropping.width / imgSize.width, cropping.height / imgSize.height)
@@ -111,17 +121,6 @@ public struct CroppingState {
 			self.scale = min(max(1.0, value), min(maxFitScale, maxScale))
 		}
 		setClampedOffset(imgSize: imgSize, offset)
-	}
-
-	public mutating func endDrag() {
-		lastOffset = offset
-		lastRotation = rotation
-	}
-
-	public mutating func endScale() {
-		lastOffset = offset
-		lastScale = scale
-		lastRotation = rotation
 	}
 
 	public mutating func rotate(clockwise: Bool = false, imgSize: CGSize, cropping: CGRect) {

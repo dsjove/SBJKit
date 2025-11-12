@@ -61,7 +61,7 @@ final class MarkupModel: ObservableObject {
     ///   - base: The base UIImage to draw beneath the markup.
     ///   - cropRect: The rect (in points) representing the visible crop area size.
     /// - Returns: A new UIImage with the markup rendered on top.
-    func render(on base: UIImage, in cropRect: CGRect) -> UIImage {
+    func render(on base: UIImage, transform: any GeometryTransform, in cropRect: CGRect) -> UIImage {
 		// If no markup, return the cropped image
 		guard !drawing.strokes.isEmpty else { return base }
 

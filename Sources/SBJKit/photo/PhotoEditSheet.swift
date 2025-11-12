@@ -45,9 +45,9 @@ public struct PhotoEditSheet: View {
 				ZStack {
 					Group {
 						if showMarkup {
-							CroppedImagePreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
+							GeometryTransformPreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
 						} else {
-							CroppedImagePreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
+							GeometryTransformPreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
 								.gesture(zoomAndPanGesture(cropRect: cropRect))
 								.simultaneousGesture(TapGesture(count: 2)
 									.onEnded {
@@ -61,7 +61,7 @@ public struct PhotoEditSheet: View {
 						}
 					}
 					markup.overlay(frame: cropRect, hitTest: showMarkup)
-						.croppingStyle(transform)
+						.geometryEffect(transform)
 				}
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
@@ -129,8 +129,7 @@ public struct PhotoEditSheet: View {
 			DragGesture()
 				.onChanged { value in
 					if let image {
-						transform.userGestured = true
-						transform.applyOffset(imgSize: image.size, value.translation, cropping: cropRect)
+						transform.onDrag(imgSize: image.size, value.translation, cropping: cropRect)
 					}
 				}
 				.onEnded { _ in
@@ -139,8 +138,7 @@ public struct PhotoEditSheet: View {
 			MagnificationGesture()
 				.onChanged { value in
 					if let image {
-						transform.userGestured = true
-						transform.applyScale(imgSize: image.size, value, cropping: cropRect)
+						transform.onScale(imgSize: image.size, value, cropping: cropRect)
 					}
 				}
 				.onEnded { _ in
@@ -177,6 +175,6 @@ public struct PhotoEditSheet: View {
 		guard let base = base else { return nil }
 		let cropped = transform.render(base)
 		guard let cropped else { return nil }
-		return markup.render(on: cropped, in: cropRect)
+		return markup.render(on: cropped, transform: transform, in: cropRect)
 	}
 }
