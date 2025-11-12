@@ -1,8 +1,5 @@
 import SwiftUI
 
-//TODO: store 'cropping: CGRect' into CroppingState -goes with fill
-//TODO: allow for non-square crop
-//TODO: use anchor if fill, otherwise center of image
 public struct CroppingState {
 	public var userGestured: Bool = false
 	public var cropping: CGRect = .zero
@@ -182,19 +179,6 @@ public struct CroppingState {
 		lastOffset = offset
 		self.cropping = cropping
 		setClampedOffset(imgSize: imgSize, offset)
-	}
-/*
-	public mutating func apply(_ value: CroppingGesture.Value, imgSize: CGSize, cropping: CGRect, anchor: CGPoint? = nil) {
-		applyOffset(imgSize: imgSize, value.translation, cropping: cropping)
-		applyScale(imgSize: imgSize, value.scale, cropping: cropping, anchor: anchor ?? value.location)
-		rotation = lastRotation + value.rotation
-	}
-*/
-	public mutating func flipHorizontally(imgSize: CGSize, cropping: CGRect) {
-		flip(horizontal: true, imgSize: imgSize, cropping: cropping)
-	}
-	public mutating func flipVertically(imgSize: CGSize, cropping: CGRect) {
-		flip(horizontal: false, imgSize: imgSize, cropping: cropping)
 	}
 
 	public func render(_ image: UIImage?) -> UIImage? {
