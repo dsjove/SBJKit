@@ -59,7 +59,60 @@ public struct CroppingState: GeometryTransform {
 
 	private mutating func setClampedOffset(_ value: CGSize) {
 		if !editing {
-			self.offset = value
+			// Ensure the rotated image AABB intersects the crop by minimally projecting
+			// the proposed center back into an overlapping position if necessary.
+			let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
+			let w = imgSize.width * renderScale * scale
+			let h = imgSize.height * renderScale * scale
+
+			let angle = CGFloat(rotation.radians)
+			let cosA = abs(cos(angle))
+			let sinA = abs(sin(angle))
+			let rotatedW = w * cosA + h * sinA
+			let rotatedH = w * sinA + h * cosA
+			let halfRotW = rotatedW / 2
+			let halfRotH = rotatedH / 2
+
+			// Proposed image center from incoming offset value
+			var cx = crop.width / 2 + value.width
+			var cy = crop.height / 2 + value.height
+
+			// Compute AABB edges for proposed position
+			var left = cx - halfRotW
+			var right = cx + halfRotW
+			var top = cy - halfRotH
+			var bottom = cy + halfRotH
+
+			// If no overlap on X, project center minimally back to nearest touching position
+			if right < 0 {
+				// Move so that right == 0
+				let delta = 0 - right
+				cx += delta
+				right += delta
+				left += delta
+			} else if left > crop.width {
+				// Move so that left == crop.width
+				let delta = crop.width - left
+				cx += delta
+				right += delta
+				left += delta
+			}
+
+			// If no overlap on Y, project center minimally back to nearest touching position
+			if bottom < 0 {
+				let delta = 0 - bottom
+				cy += delta
+				bottom += delta
+				top += delta
+			} else if top > crop.height {
+				let delta = crop.height - top
+				cy += delta
+				bottom += delta
+				top += delta
+			}
+
+			// Set offset from corrected center
+			self.offset = CGSize(width: cx - crop.width / 2, height: cy - crop.height / 2)
 			return
 		}
 		let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
@@ -93,7 +146,7 @@ public struct CroppingState: GeometryTransform {
 		lastScale = scale
 	}
 
-	//TODO: have viewing (not editing) never allow entire image outside of crop rect on gesture
+	//TODO: stop scale down when all edges are inside the crop
 	private mutating func setClampedScale(_ value: CGFloat, fill: Bool?) {
 		// Scale with anchor at the crop center projected onto the image
 		// 1) Compute image rect in crop coordinates before scaling
@@ -121,7 +174,7 @@ public struct CroppingState: GeometryTransform {
 				self.scale = min(max(1.0, value), min(maxFitScale, maxScale))
 			}
 		} else {
-			self.scale = value
+			self.scale = min(value, maxScale)
 		}
 
 		// 3) Recompute image rect after scaling

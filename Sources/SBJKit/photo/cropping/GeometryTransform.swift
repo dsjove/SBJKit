@@ -12,6 +12,7 @@ public protocol GeometryTransform {
 
 public extension GeometryTransform {
 	 func render(_ image: UIImage) -> UIImage {
+		//TODO: allow for non square
 		let squareSize = min(crop.width, crop.height)
 		let imgSize = image.size
 		let square = squareSize
