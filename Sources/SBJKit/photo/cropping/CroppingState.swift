@@ -82,7 +82,6 @@ public struct CroppingState: GeometryTransform {
 		self.offset = CGSize(width: x, height: y)
 	}
 
-	//TODO: have option for anchor at center of crop projected onto positioned image
 	public mutating func onScale(by value: CGFloat) {
 		self.userGestured = true
 		let test = lastScale * value
@@ -96,21 +95,54 @@ public struct CroppingState: GeometryTransform {
 
 	//TODO: have viewing (not editing) never allow entire image outside of crop rect on gesture
 	private mutating func setClampedScale(_ value: CGFloat, fill: Bool?) {
+		// Scale with anchor at the crop center projected onto the image
+		// 1) Compute image rect in crop coordinates before scaling
+		let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
+		let oldScale = scale
+		let wOld = imgSize.width * renderScale * oldScale
+		let hOld = imgSize.height * renderScale * oldScale
+		let imageOriginOld = CGPoint(x: (crop.width - wOld) / 2 + offset.width,
+									 y: (crop.height - hOld) / 2 + offset.height)
+		let cropCenter = CGPoint(x: crop.width / 2, y: crop.height / 2)
+		// Vector from image origin to crop center in crop space
+		let vOld = CGPoint(x: cropCenter.x - imageOriginOld.x, y: cropCenter.y - imageOriginOld.y)
+
+		// 2) Apply clamped scale value as before
 		if let fill {
 			if fill {
-				let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
-				let minScale = max(crop.width / (imgSize.width * renderScale), crop.height / (imgSize.height * renderScale), 1.0)
+				let minScale = max(crop.width / (imgSize.width * renderScale),
+											  crop.height / (imgSize.height * renderScale),
+											  1.0)
 				self.scale = min(max(minScale, value), maxScale)
 			} else {
-				let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
-				let maxFitScale = min(crop.width / (imgSize.width * renderScale), crop.height / (imgSize.height * renderScale), 1.0)
+				let maxFitScale = min(crop.width / (imgSize.width * renderScale),
+											  crop.height / (imgSize.height * renderScale),
+											  1.0)
 				self.scale = min(max(1.0, value), min(maxFitScale, maxScale))
 			}
-			setClampedOffset(offset)
-		}
-		else {
+		} else {
 			self.scale = value
 		}
+
+		// 3) Recompute image rect after scaling
+		let wNew = imgSize.width * renderScale * scale
+		let hNew = imgSize.height * renderScale * scale
+
+		// 4) Adjust offset so that the crop center projects to the same image point
+		// When scaling around an anchor A, the delta needed is: A - (A - O) * (new/old),
+		// which in our origin-offset formulation becomes:
+		// newOrigin = cropCenter - vOld * (scale/oldScale)
+		// offset derives from origin relative to centered placement.
+		if oldScale != 0 {
+			let newOrigin = CGPoint(x: cropCenter.x - vOld.x * (scale / oldScale),
+								   y: cropCenter.y - vOld.y * (scale / oldScale))
+			let newOffsetX = newOrigin.x - (crop.width - wNew) / 2
+			let newOffsetY = newOrigin.y - (crop.height - hNew) / 2
+			self.offset = CGSize(width: newOffsetX, height: newOffsetY)
+		}
+
+		// 5) Clamp offset considering rotation bounds
+		setClampedOffset(offset)
 	}
 
 	//TODO: add fine rotation
