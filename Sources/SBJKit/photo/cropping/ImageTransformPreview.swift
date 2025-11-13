@@ -3,13 +3,12 @@ import SwiftUI
 public struct ImageTransformPreview: View {
 	private let image: UIImage?
 	private let transform: CroppingState
-	private let cropRect: CGRect?
 	private let opacity: Double
+	private var presentCrop: Bool { opacity > 0.0 }
 
-	public init(image: UIImage?, transform: CroppingState, cropRect: CGRect?, opacity: Double = 0.4) {
+	public init(image: UIImage?, transform: CroppingState, opacity: Double = 0.4) {
 		self.image = image
 		self.transform = transform
-		self.cropRect = cropRect
 		self.opacity = opacity
 	}
 
@@ -17,27 +16,24 @@ public struct ImageTransformPreview: View {
 		ZStack {
 			Color(.systemBackground).ignoresSafeArea()
 			if let image {
-				if transform.fill {
-					if opacity > 0.0 {
-						Image(uiImage: image)
-							.geometryEffect(transform, cropRect)
-							.opacity(opacity)
-					}
+				if presentCrop {
 					Image(uiImage: image)
-						.geometryEffect(transform, cropRect)
-						.clipped()
+						.geometryEffect(transform, clip: false)
+						.opacity(opacity)
+					Image(uiImage: image)
+						.geometryEffect(transform, clip: true)
 				} else {
 					Image(uiImage: image)
-						.geometryEffect(transform, cropRect)
+						.geometryEffect(transform, clip: false)
 				}
 			} else {
 				Image(systemName: "photo")
 					.foregroundStyle(.primary)
 					.font(.largeTitle)
 			}
-			if let cropRect, transform.fill {
+			if presentCrop {
 				Rectangle()
-					.path(in: cropRect)
+					.path(in: transform.crop)
 					.stroke(style: StrokeStyle(lineWidth: 2, dash: [10]))
 					.foregroundColor(.primary)
 			}
