@@ -43,25 +43,12 @@ public struct PhotoEditSheet: View {
 			GeometryReader { geometry in
 				let cropRect = calcCropRect(geometry.size)
 				ZStack {
-					Group {
-						if showMarkup {
-							GeometryTransformPreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
-						} else {
-							GeometryTransformPreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
-								.gesture(zoomAndPanGesture(cropRect: cropRect))
-								.simultaneousGesture(TapGesture(count: 2)
-									.onEnded {
-										reset(cropRect)
-									})
-						}
-					}
-					.onChange(of: geometry.size) { oldSize, newSize in
-						if !transform.userGestured {
-							reset(cropRect)
-						}
-					}
+					ImageTransformPreview(image: image, transform: transform, cropRect: cropRect, opacity: opacity)
+						.gesture(enabled: !showMarkup, transformGestures(cropRect: cropRect))
 					markup.overlay(frame: cropRect, hitTest: showMarkup)
-						.geometryEffect(transform)
+				}
+				.onChange(of: geometry.size) { oldSize, newSize in
+					onChange(cropRect)
 				}
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
@@ -124,26 +111,34 @@ public struct PhotoEditSheet: View {
 		}
 	}
 
-	private func zoomAndPanGesture(cropRect: CGRect) -> some Gesture {
-		SimultaneousGesture(
-			DragGesture()
-				.onChanged { value in
-					if let image {
-						transform.onDrag(imgSize: image.size, value.translation, cropping: cropRect)
-					}
+	private func transformGestures(cropRect: CGRect) -> some Gesture {
+		let drag = DragGesture()
+			.onChanged { value in
+				if let image {
+					transform.onDrag(imgSize: image.size, value.translation, cropping: cropRect)
 				}
-				.onEnded { _ in
-					transform.endDrag()
-				},
-			MagnificationGesture()
-				.onChanged { value in
-					if let image {
-						transform.onScale(imgSize: image.size, value, cropping: cropRect)
-					}
+			}
+			.onEnded { _ in
+				transform.endDrag()
+			}
+
+		let pinch = MagnificationGesture()
+			.onChanged { value in
+				if let image {
+					transform.onScale(imgSize: image.size, value, cropping: cropRect)
 				}
-				.onEnded { _ in
-					transform.endScale()
-				}
+			}
+			.onEnded { _ in
+				transform.endScale()
+			}
+
+		let doubleTap = TapGesture(count: 2)
+			.onEnded {
+				reset(cropRect)
+			}
+		return SimultaneousGesture(
+			SimultaneousGesture(drag, pinch),
+			doubleTap
 		)
 	}
 
@@ -163,6 +158,14 @@ public struct PhotoEditSheet: View {
 			height: size.height - (2 * inset))
 	}
 
+	private func onChange(_ cropRect: CGRect) {
+		withAnimation() {
+			if let image {
+				transform.onChange(imgSize: image.size, cropping: cropRect)
+			}
+		}
+	}
+
 	private func reset(_ cropRect: CGRect) {
 		withAnimation() {
 			if let image {
@@ -175,6 +178,6 @@ public struct PhotoEditSheet: View {
 		guard let base = base else { return nil }
 		let cropped = transform.render(base)
 		guard let cropped else { return nil }
-		return markup.render(on: cropped, transform: transform, in: cropRect)
+		return markup.render(on: cropped, in: cropRect.size)
 	}
 }

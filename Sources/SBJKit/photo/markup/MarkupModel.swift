@@ -32,52 +32,54 @@ final class MarkupModel: ObservableObject {
 				self.canvasView.isOpaque = false
 				self.canvasView.backgroundColor = .clear
 				self.canvasView.setNeedsDisplay()
-				self.toolPicker.setVisible(true, forFirstResponder: self.canvasView)
+				self.toolPicker.setVisible(hitTest, forFirstResponder: self.canvasView)
 				self.toolPicker.addObserver(self.canvasView)
 				self.canvasView.becomeFirstResponder()
 			}
+			.onChange(of: hitTest) { newValue in
+				self.toolPicker.setVisible(newValue, forFirstResponder: self.canvasView)
+				if newValue {
+					self.canvasView.becomeFirstResponder()
+				} else {
+					self.canvasView.resignFirstResponder()
+				}
+			}
 			.onDisappear {
 				self.toolPicker.setVisible(false, forFirstResponder: self.canvasView)
+				self.toolPicker.removeObserver(self.canvasView)
+				self.canvasView.resignFirstResponder()
 			}
 	}
 
-    func clear() {
-        canvasView.drawing = PKDrawing()
-        drawing = PKDrawing()
-    }
+	func clear() {
+		canvasView.drawing = PKDrawing()
+		drawing = PKDrawing()
+	}
 
-    func undo() {
-        canvasView.undoManager?.undo()
-        drawing = canvasView.drawing
-    }
+	func undo() {
+		canvasView.undoManager?.undo()
+		drawing = canvasView.drawing
+	}
 
-    func redo() {
-        canvasView.undoManager?.redo()
-        drawing = canvasView.drawing
-    }
+	func redo() {
+		canvasView.undoManager?.redo()
+		drawing = canvasView.drawing
+	}
 
-    /// Renders the current PencilKit drawing on top of a base image within the given crop rect.
-    /// - Parameters:
-    ///   - base: The base UIImage to draw beneath the markup.
-    ///   - cropRect: The rect (in points) representing the visible crop area size.
-    /// - Returns: A new UIImage with the markup rendered on top.
-    func render(on base: UIImage, transform: any GeometryTransform, in cropRect: CGRect) -> UIImage {
-		// If no markup, return the cropped image
+	func render(on base: UIImage, in cropSize: CGSize? = nil) -> UIImage {
 		guard !drawing.strokes.isEmpty else { return base }
 
-        let size = CGSize(width: cropRect.width, height: cropRect.height)
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = UIScreen.main.scale
-        let renderer = UIGraphicsImageRenderer(size: size, format: format)
+		let size = cropSize ?? base.size
+		let renderRect = CGRect(origin: .zero, size: size)
+		let format = UIGraphicsImageRendererFormat()
+		format.scale = UIScreen.main.scale
+		let renderer = UIGraphicsImageRenderer(size: size, format: format)
 
-        let composed = renderer.image { ctx in
-            // Draw the base image to fill
-            base.draw(in: CGRect(origin: .zero, size: size))
-
-            // Render the PencilKit drawing, scaled to the crop rect size
-            let drawingImage = drawing.image(from: CGRect(origin: .zero, size: size), scale: UIScreen.main.scale)
-            drawingImage.draw(in: CGRect(origin: .zero, size: size))
-        }
-        return composed
-    }
+		let composed = renderer.image { ctx in
+			base.draw(in: renderRect)
+			let drawingImage = drawing.image(from: renderRect, scale: UIScreen.main.scale)
+			drawingImage.draw(in: renderRect)
+		}
+		return composed
+	}
 }

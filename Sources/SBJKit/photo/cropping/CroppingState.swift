@@ -12,13 +12,19 @@ public struct CroppingState: GeometryTransform {
 
 	public private(set) var cropping: CGRect = .zero
 
-	public private(set) var userGestured: Bool = false
-	public private(set) var lastOffset: CGSize = .zero
-	public private(set) var lastScale: CGFloat = 1.0
+	private var userGestured: Bool = false
+	private var lastOffset: CGSize = .zero
+	private var lastScale: CGFloat = 1.0
 
 	public init(fill: Bool, maxScale: Double) {
 		self.fill = fill
 		self.maxScale = maxScale
+	}
+
+	public mutating func onChange(imgSize: CGSize, cropping: CGRect) {
+		if !userGestured {
+			reset(imgSize: imgSize, cropping: cropping)
+		}
 	}
 
 	public mutating func reset(imgSize: CGSize, cropping: CGRect) {

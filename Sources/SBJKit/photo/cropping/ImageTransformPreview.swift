@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct GeometryTransformPreview: View {
+public struct ImageTransformPreview: View {
 	private let image: UIImage?
 	private let transform: CroppingState
 	private let cropRect: CGRect?
