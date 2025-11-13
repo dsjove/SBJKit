@@ -1,13 +1,41 @@
 import SwiftUI
 
 public protocol GeometryTransform {
-	var scale: CGFloat { get } //TODO: x and y
+	var scale: CGFloat { get }
 	var rotation: Angle { get }
 	var flipX: Bool { get }
 	var flipY: Bool { get }
 	var offset: CGSize { get }
 	var crop: CGRect { get }
 	//TODO: Perspective skew x and y
+}
+
+public extension GeometryTransform {
+	 func render(_ image: UIImage) -> UIImage {
+		let squareSize = min(crop.width, crop.height)
+		let imgSize = image.size
+		let square = squareSize
+		let renderScale = min(square / imgSize.width, square / imgSize.height)
+		let w = imgSize.width * renderScale * scale
+		let h = imgSize.height * renderScale * scale
+		let x = (square - w) / 2 + offset.width
+		let y = (square - h) / 2 + offset.height
+		let centerX = x + w / 2
+		let centerY = y + h / 2
+		let renderer = UIGraphicsImageRenderer(size: CGSize(width: square, height: square))
+		return renderer.image { ctx in
+			ctx.cgContext.setFillColor(UIColor.black.cgColor)
+			ctx.cgContext.fill(CGRect(origin: .zero, size: CGSize(width: square, height: square)))
+
+			ctx.cgContext.translateBy(x: centerX, y: centerY)
+			if flipX { ctx.cgContext.scaleBy(x: -1, y: 1) }
+			if flipY { ctx.cgContext.scaleBy(x: 1, y: -1) }
+			ctx.cgContext.rotate(by: CGFloat(rotation.radians))
+			ctx.cgContext.translateBy(x: -centerX, y: -centerY)
+
+			image.draw(in: CGRect(x: x, y: y, width: w, height: h))
+		}
+	}
 }
 
 private struct ConditionalClip: ViewModifier {

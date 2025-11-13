@@ -10,7 +10,10 @@ public struct CroppingState: GeometryTransform {
 	public private(set) var flipX: Bool = false
 	public private(set) var flipY: Bool = false
 	public private(set) var crop: CGRect = .zero
+	//TODO: supplimental x and y scale for squeeze
+	//TODO: Perspective skew x and y
 
+	private var imgSize: CGSize = .zero
 	private var userGestured: Bool = false
 	private var lastOffset: CGSize = .zero
 	private var lastScale: CGFloat = 1.0
@@ -20,39 +23,43 @@ public struct CroppingState: GeometryTransform {
 		self.maxScale = maxScale
 	}
 
-	public mutating func onChange(imgSize: CGSize?, cropping: CGRect) {
+	public mutating func onChange(cropping: CGRect, of imageSize: CGSize) {
 		guard min(cropping.width, cropping.height) > 0 else { return }
+		if self.imgSize != imageSize {
+			userGestured = false
+			self.imgSize = imageSize
+		}
 
 		self.crop = cropping
 
-		if let imgSize, !userGestured {
-			reset(imgSize: imgSize)
+		if !userGestured {
+			reset()
 		}
 	}
 
-	public mutating func reset(imgSize: CGSize) {
+	public mutating func reset() {
 		offset = .zero
 		lastOffset = .zero
-		setClampedScale(imgSize: imgSize, 0, fill: editing) // otherwise fit for viewing
+		setClampedScale(0, fill: editing) // otherwise fit for viewing
 		endScale()
 		rotation = .zero
 		flipX = false
 		flipY = false
 	}
 
-	public mutating func onDrag(imgSize: CGSize, _ value: CGSize) {
+	public mutating func onDrag(by value: CGSize) {
 		self.userGestured = true
 		let test = CGSize(width: lastOffset.width + value.width, height: lastOffset.height + value.height)
-		setClampedOffset(imgSize: imgSize, test)
+		setClampedOffset(test)
 	}
 
 	public mutating func endDrag() {
 		lastOffset = offset
 	}
 
-	private mutating func setClampedOffset(imgSize: CGSize, _ test: CGSize) {
+	private mutating func setClampedOffset(_ value: CGSize) {
 		if !editing {
-			self.offset = test
+			self.offset = value
 			return
 		}
 		let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
@@ -70,31 +77,16 @@ public struct CroppingState: GeometryTransform {
 		let maxX = max(0, (rotatedW - crop.width) / 2)
 		let minY = min(0, (crop.height - rotatedH) / 2)
 		let maxY = max(0, (rotatedH - crop.height) / 2)
-		let x = max(min(test.width, maxX), minX)
-		let y = max(min(test.height, maxY), minY)
+		let x = max(min(value.width, maxX), minX)
+		let y = max(min(value.height, maxY), minY)
 		self.offset = CGSize(width: x, height: y)
 	}
 
-	/// Applies a scale change centered on an optional anchor point.
-	/// If an anchor is provided, offset is adjusted so that the anchor point remains fixed under the scaled image.
-	public mutating func onScale(imgSize: CGSize, _ value: CGFloat, anchor: CGPoint? = nil) {
+	//TODO: have option for anchor at center of crop projected onto positioned image
+	public mutating func onScale(by value: CGFloat) {
 		self.userGestured = true
 		let test = lastScale * value
-		// If anchor is provided, adjust offset so anchor remains under gesture
-		if let anchor = anchor {
-			let prevScale = scale
-			let prevOffset = offset
-			let prevAnchor = anchor
-			let anchorInImageBefore = (prevAnchor - prevOffset) / prevScale
-			setClampedScale(imgSize: imgSize, test, fill: editing ? true : nil)
-			// After scale, adjust offset so anchor remains fixed
-			let anchorInImageAfter = anchorInImageBefore * scale + offset
-			let offsetDelta = CGSize(width: anchor.x - anchorInImageAfter.x, height: anchor.y - anchorInImageAfter.y)
-			self.offset.width += offsetDelta.width
-			self.offset.height += offsetDelta.height
-		} else {
-			setClampedScale(imgSize: imgSize, test, fill: editing ? true : nil)
-		}
+		setClampedScale(test, fill: editing ? true : nil)
 	}
 
 	public mutating func endScale() {
@@ -102,7 +94,8 @@ public struct CroppingState: GeometryTransform {
 		lastScale = scale
 	}
 
-	private mutating func setClampedScale(imgSize: CGSize, _ value: CGFloat, fill: Bool?) {
+	//TODO: have viewing (not editing) never allow entire image outside of crop rect on gesture
+	private mutating func setClampedScale(_ value: CGFloat, fill: Bool?) {
 		if let fill {
 			if fill {
 				let renderScale = min(crop.width / imgSize.width, crop.height / imgSize.height)
@@ -113,14 +106,16 @@ public struct CroppingState: GeometryTransform {
 				let maxFitScale = min(crop.width / (imgSize.width * renderScale), crop.height / (imgSize.height * renderScale), 1.0)
 				self.scale = min(max(1.0, value), min(maxFitScale, maxScale))
 			}
-			setClampedOffset(imgSize: imgSize, offset)
+			setClampedOffset(offset)
 		}
 		else {
 			self.scale = value
 		}
 	}
 
-	public mutating func rotate(clockwise: Bool = false, imgSize: CGSize) {
+	//TODO: add fine rotation
+
+	public mutating func rotate(clockwise: Bool = false) {
 		// Preserve crop center focus by adjusting offset based on rotation
 
 		// 1. Calculate the center point of the cropping rect
@@ -158,10 +153,10 @@ public struct CroppingState: GeometryTransform {
 
 		// Perform the rotation increment and clamp offset accordingly
 		rotation += .init(degrees: clockwise ? 90 : -90)
-		setClampedOffset(imgSize: imgSize, offset)
+		setClampedOffset(offset)
 	}
 
-	public mutating func flip(horizontal: Bool = true, imgSize: CGSize) {
+	public mutating func flip(horizontal: Bool = true) {
 		if horizontal {
 			let newOffset = CGSize(width: -offset.width, height: offset.height)
 			flipX.toggle()
@@ -172,34 +167,6 @@ public struct CroppingState: GeometryTransform {
 			offset = newOffset
 		}
 		lastOffset = offset
-		setClampedOffset(imgSize: imgSize, offset)
-	}
-
-	public func render(_ image: UIImage?) -> UIImage? {
-		let squareSize = min(crop.width, crop.height)
-		guard let image else { return nil }
-		let imgSize = image.size
-		let square = squareSize
-		let renderScale = min(square / imgSize.width, square / imgSize.height)
-		let w = imgSize.width * renderScale * scale
-		let h = imgSize.height * renderScale * scale
-		let x = (square - w) / 2 + offset.width
-		let y = (square - h) / 2 + offset.height
-		let centerX = x + w / 2
-		let centerY = y + h / 2
-		let renderer = UIGraphicsImageRenderer(size: CGSize(width: square, height: square))
-		return renderer.image { ctx in
-			ctx.cgContext.setFillColor(UIColor.black.cgColor)
-			ctx.cgContext.fill(CGRect(origin: .zero, size: CGSize(width: square, height: square)))
-
-			// Apply flipping and rotation about center of drawn image rect
-			ctx.cgContext.translateBy(x: centerX, y: centerY)
-			if flipX { ctx.cgContext.scaleBy(x: -1, y: 1) }
-			if flipY { ctx.cgContext.scaleBy(x: 1, y: -1) }
-			ctx.cgContext.rotate(by: CGFloat(rotation.radians))
-			ctx.cgContext.translateBy(x: -centerX, y: -centerY)
-
-			image.draw(in: CGRect(x: x, y: y, width: w, height: h))
-		}
+		setClampedOffset(offset)
 	}
 }

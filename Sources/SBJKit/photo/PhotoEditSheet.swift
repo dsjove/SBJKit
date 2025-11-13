@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct PhotoEditSheet: View {
-	let image: UIImage?
+	let image: UIImage
 	let edited: ((UIImage?) -> Void)?
 	let dismiss: (() -> Void)?
 	let inset: Double
@@ -14,7 +14,7 @@ public struct PhotoEditSheet: View {
 	@StateObject private var markup = MarkupModel()
 
 	public init(
-			image: UIImage?,
+			image: UIImage,
 			edited: ((UIImage?) -> Void)?,
 			dismiss: (() -> Void)? = nil,
 			maxScale: Double = 8.0,
@@ -28,7 +28,7 @@ public struct PhotoEditSheet: View {
 		self._transform = State(initialValue: .init(editing: edited != nil, maxScale: maxScale))
 	}
 
-	public init(viewing image: UIImage?, inset: Double = 0.0, dismiss: (()->())? = nil) {
+	public init(viewing image: UIImage, inset: Double = 0.0, dismiss: (()->())? = nil) {
 		self = .init(
 			image: image,
 			edited: nil,
@@ -64,7 +64,7 @@ public struct PhotoEditSheet: View {
 					markup.overlay(frame: transform.crop, hitTest: showMarkup)
 				}
 				.onChange(of: geometry.size) { _, newSize in
-					transform.onChange(imgSize: image?.size, cropping: calcCropRect(newSize))
+					transform.onChange(cropping: calcCropRect(newSize), of: image.size)
 				}
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
@@ -96,13 +96,11 @@ public struct PhotoEditSheet: View {
 									markup.redo()
 								}
 							} else {
-								if let image {
-									ActionButton("Flip", image: "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right") {
-										transform.flip(imgSize: image.size)
-									}
-									ActionButton("Rotate", image: "rotate.left") {
-										transform.rotate(imgSize: image.size)
-									}
+								ActionButton("Flip", image: "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right") {
+									transform.flip()
+								}
+								ActionButton("Rotate", image: "rotate.left") {
+									transform.rotate()
 								}
 								ActionButton("Reset", image: "inset.filled.square.dashed") {
 									reset()
@@ -130,9 +128,7 @@ public struct PhotoEditSheet: View {
 	private func transformGestures() -> some Gesture {
 		let drag = DragGesture()
 			.onChanged { value in
-				if let image {
-					transform.onDrag(imgSize: image.size, value.translation)
-				}
+				transform.onDrag(by: value.translation)
 			}
 			.onEnded { _ in
 				transform.endDrag()
@@ -140,9 +136,7 @@ public struct PhotoEditSheet: View {
 
 		let pinch = MagnificationGesture()
 			.onChanged { value in
-				if let image {
-					transform.onScale(imgSize: image.size, value)
-				}
+				transform.onScale(by: value)
 			}
 			.onEnded { _ in
 				transform.endScale()
@@ -160,16 +154,13 @@ public struct PhotoEditSheet: View {
 
 	private func reset() {
 		withAnimation() {
-			if let image {
-				transform.reset(imgSize: image.size)
-			}
+			transform.reset()
 		}
 	}
 
 	private func renderWithMarkup(_ base: UIImage?) -> UIImage? {
 		guard let base = base else { return nil }
 		let cropped = transform.render(base)
-		guard let cropped else { return nil }
 		return markup.render(on: cropped, in: transform.crop.size)
 	}
 }
