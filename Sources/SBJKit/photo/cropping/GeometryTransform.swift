@@ -12,22 +12,30 @@ public protocol GeometryTransform {
 
 public extension GeometryTransform {
 	 func render(_ image: UIImage) -> UIImage {
-		//TODO: allow for non square
-		let squareSize = min(crop.width, crop.height)
+		let cropRect = crop
+		let renderSize = CGSize(width: max(1, cropRect.width), height: max(1, cropRect.height))
+
 		let imgSize = image.size
-		let square = squareSize
-		let renderScale = min(square / imgSize.width, square / imgSize.height)
-		let w = imgSize.width * renderScale * scale
-		let h = imgSize.height * renderScale * scale
-		let x = (square - w) / 2 + offset.width
-		let y = (square - h) / 2 + offset.height
+
+		// Scale the image to fit entirely within the crop rect while preserving aspect ratio
+		let scaleToFit = min(renderSize.width / imgSize.width, renderSize.height / imgSize.height)
+		let w = imgSize.width * scaleToFit * scale
+		let h = imgSize.height * scaleToFit * scale
+
+		// Center the image within the crop rect and then apply offset
+		let x = (renderSize.width - w) / 2 + offset.width
+		let y = (renderSize.height - h) / 2 + offset.height
+
+		// Compute center for rotation and flipping transforms
 		let centerX = x + w / 2
 		let centerY = y + h / 2
-		let renderer = UIGraphicsImageRenderer(size: CGSize(width: square, height: square))
+
+		let renderer = UIGraphicsImageRenderer(size: renderSize)
 		return renderer.image { ctx in
 			ctx.cgContext.setFillColor(UIColor.black.cgColor)
-			ctx.cgContext.fill(CGRect(origin: .zero, size: CGSize(width: square, height: square)))
+			ctx.cgContext.fill(CGRect(origin: .zero, size: renderSize))
 
+			// Apply transforms around the image center
 			ctx.cgContext.translateBy(x: centerX, y: centerY)
 			if flipX { ctx.cgContext.scaleBy(x: -1, y: 1) }
 			if flipY { ctx.cgContext.scaleBy(x: 1, y: -1) }
