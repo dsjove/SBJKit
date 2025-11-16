@@ -1,7 +1,8 @@
 import SwiftUI
 
-public struct CroppingState: GeometryTransform {
+public struct CroppingState: GeometryTransforming {
 	private let editing: Bool
+	//TODO: we need a good way of describing min and max scales where the values are always positive.
 	private let maxScale: Double
 
 	public private(set) var offset: CGSize = .zero
@@ -10,8 +11,6 @@ public struct CroppingState: GeometryTransform {
 	public private(set) var flipX: Bool = false
 	public private(set) var flipY: Bool = false
 	public private(set) var crop: CGRect = .zero
-	//TODO: supplimental x and y scale for squeeze
-	//TODO: Perspective skew x and y
 
 	private var imgSize: CGSize = .zero
 	private var userGestured: Bool = false
@@ -146,7 +145,6 @@ public struct CroppingState: GeometryTransform {
 		lastScale = scale
 	}
 
-	//TODO: stop scale down when all edges are inside the crop
 	private mutating func setClampedScale(_ value: CGFloat, fill: Bool?) {
 		// Scale with anchor at the crop center projected onto the image
 		// 1) Compute image rect in crop coordinates before scaling
@@ -174,6 +172,7 @@ public struct CroppingState: GeometryTransform {
 				self.scale = min(max(1.0, value), min(maxFitScale, maxScale))
 			}
 		} else {
+	//TODO: stop scale down when all edges are inside the crop
 			self.scale = min(value, maxScale)
 		}
 
@@ -197,8 +196,6 @@ public struct CroppingState: GeometryTransform {
 		// 5) Clamp offset considering rotation bounds
 		setClampedOffset(offset)
 	}
-
-	//TODO: add fine rotation
 
 	public mutating func rotate(clockwise: Bool = false) {
 		// Preserve crop center focus by adjusting offset based on rotation

@@ -55,7 +55,7 @@ public struct HelpButton: View {
 		self.asset = asset
 		self.systemImage = systemImage
 		self.auto = auto
-		self.enabled = enabled
+		self.enabled = enabled && asset.stringValue() != nil
 		self.showAbout = showAbout && HelpButton.hasAbout
 		self.substitutions = [
 			"TITLE" : asset.title,

@@ -10,6 +10,39 @@ public protocol GeometryTransform {
 	//TODO: Perspective skew x and y
 }
 
+public protocol GeometryTransforming: GeometryTransform {
+
+	mutating func onChange(cropping: CGRect, of imageSize: CGSize)
+
+	mutating func reset()
+
+	mutating func onDrag(by value: CGSize)
+
+	mutating func endDrag()
+	
+	//TODO: supplimental x and y scale for squeeze
+
+	mutating func onScale(by value: CGFloat)
+
+	mutating func endScale()
+
+	//TODO: supplimental fine rotation
+
+	mutating func rotate(clockwise: Bool)
+
+	mutating func flip(horizontal: Bool)
+}
+
+extension GeometryTransforming {
+	public mutating func rotate() {
+		rotate(clockwise: false)
+	}
+
+	public mutating func flip() {
+		flip(horizontal: true)
+	}
+}
+
 public extension GeometryTransform {
 	 func render(_ image: UIImage) -> UIImage {
 		let cropRect = crop
@@ -76,13 +109,13 @@ public struct GeometryTransformModifier: ViewModifier {
 }
 
 public extension View {
-	func geometryEffect(_ transform: any GeometryTransform, clip: Bool) -> some View {
+	func geometryEffect(_ transform: any GeometryTransform, clip: Bool = true) -> some View {
 		self.modifier(GeometryTransformModifier(transform: transform, clip: clip))
 	}
 }
 
 public extension Image {
-	@MainActor func geometryEffect(_ transform: any GeometryTransform, clip: Bool) -> some View {
+	@MainActor func geometryEffect(_ transform: any GeometryTransform, clip: Bool = true) -> some View {
 		self
 			.resizable()
 			.modifier(GeometryTransformModifier(transform: transform, clip: clip))

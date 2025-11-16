@@ -118,7 +118,7 @@ public struct PhotoEditSheet: View {
 								([image].compactMap { $0 }, nil)
 							}
 						}
-						//HelpButton(asset: .init(title: isEditing ? "Edit Photo" : "View Photo", folder: "help", mainBundle: false))
+						HelpButton(asset: .init(title: isEditing ? "Edit Photo" : "View Photo", folder: "help", mainBundle: false))
 					}
 				}
 			}
