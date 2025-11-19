@@ -1,5 +1,73 @@
 import SwiftUI
 
+public struct PhotoMenuOptions: OptionSet, Sendable {
+	public let rawValue: Int
+
+	// Importing
+	public static let photos = PhotoMenuOptions(rawValue: 1 << 0)
+	public static let camera = PhotoMenuOptions(rawValue: 1 << 1)
+	public static let files = PhotoMenuOptions(rawValue: 1 << 2)
+	public static let paste = PhotoMenuOptions(rawValue: 1 << 3)
+	// Editing
+	public static let edit = PhotoMenuOptions(rawValue: 1 << 4)
+	public static let clear = PhotoMenuOptions(rawValue: 1 << 5)
+	// Viewing
+	// TODO: 'Share': ShareButton currently cannot work from a menu
+	// TODO: 'View': needs more context in callbacks
+
+	public static let all: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
+
+	public init(rawValue: Int) {
+		self.rawValue = rawValue
+	}
+
+	static var canShowPhotos: Bool {
+#if os(iOS) || os(tvOS) || os(visionOS)
+		if #available(iOS 14, tvOS 14, visionOS 1, *) {
+			return true
+		}
+		return false
+#elseif os(macOS)
+		if #available(macOS 12, *) {
+			return true
+		}
+		return false
+#else
+		return false
+#endif
+	}
+
+	@MainActor
+	static var canShowCamera: Bool {
+#if os(iOS) || os(visionOS)
+		return UIImagePickerController.isSourceTypeAvailable(.camera)
+#else
+		return false
+#endif
+	}
+
+	static var canShowFiles: Bool {
+#if os(iOS) || os(macOS) || os(visionOS)
+		if #available(iOS 14, macOS 11, visionOS 1, *) {
+			return true
+		}
+		return false
+#else
+		return false
+#endif
+	}
+}
+
+public struct _DefaultPhotoImportMenuLabel: View {
+	let isFilled: Bool
+	public var body: some View {
+		Image(systemName: isFilled ? "photo.fill" : "photo")
+			.buttonStyle(.bordered)
+			.controlSize(.large)
+			.accessibilityAddTraits(.isButton)
+	}
+}
+
 fileprivate class PhotoMenuState: ObservableObject {
 	@Published var isPickerPresented = false
 	@Published var isCameraPresented = false
@@ -9,88 +77,40 @@ fileprivate class PhotoMenuState: ObservableObject {
 	@Published var importedImage: UIImage? = nil
 }
 
-public struct PhotoImportMenu: View {
-	public struct MenuOptions: OptionSet, Sendable {
-		public let rawValue: Int
+public struct PhotoImportMenu<Content: View>: View {
+	@Binding private var image: UIImage?
+	@StateObject private var state = PhotoMenuState()
+    private let label: () -> Content
+	
+	private let options: PhotoMenuOptions
 
-		// Importing
-		public static let photos = MenuOptions(rawValue: 1 << 0)
-		public static let camera = MenuOptions(rawValue: 1 << 1)
-		public static let files = MenuOptions(rawValue: 1 << 2)
-		public static let paste = MenuOptions(rawValue: 1 << 3)
-		// Editing
-		public static let edit = MenuOptions(rawValue: 1 << 4)
-		public static let clear = MenuOptions(rawValue: 1 << 5)
-		// Viewing
-		// TODO: 'Share': ShareButton currently cannot work from a menu
-		// TODO: 'View': needs more context in callbacks
-
-		public static let all: MenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
-
-		public init(rawValue: Int) {
-			self.rawValue = rawValue
-		}
-
-		static var canShowPhotos: Bool {
-#if os(iOS) || os(tvOS) || os(visionOS)
-			if #available(iOS 14, tvOS 14, visionOS 1, *) {
-				return true
-			}
-			return false
-#elseif os(macOS)
-			if #available(macOS 12, *) {
-				return true
-			}
-			return false
-#else
-			return false
-#endif
-		}
-
-		@MainActor
-		static var canShowCamera: Bool {
-#if os(iOS) || os(visionOS)
-			return UIImagePickerController.isSourceTypeAvailable(.camera)
-#else
-			return false
-#endif
-		}
-
-		static var canShowFiles: Bool {
-#if os(iOS) || os(macOS) || os(visionOS)
-			if #available(iOS 14, macOS 11, visionOS 1, *) {
-				return true
-			}
-			return false
-#else
-			return false
-#endif
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .all) where Content == _DefaultPhotoImportMenuLabel {
+		self._image = image
+		self.options = options
+		self.label = {
+			_DefaultPhotoImportMenuLabel(isFilled: image.wrappedValue != nil)
 		}
 	}
 
-	@Binding private var image: UIImage?
-	@StateObject private var state = PhotoMenuState()
-	
-	private let options: MenuOptions
-
-	public init(image: Binding<UIImage?>, options: MenuOptions = .all) {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .all, @ViewBuilder label: @escaping () -> Content) {
 		self._image = image
 		self.options = options
+		self.label = label
 	}
 
 	public var body: some View {
 		Menu {
-			if options.contains(.photos) && MenuOptions.canShowPhotos {
+			if options.contains(.photos) && PhotoMenuOptions.canShowPhotos {
 				Button(action: { state.isPickerPresented = true }) {
 					Label("Photos", systemImage: "photo.on.rectangle")
 				}
 			}
-			if options.contains(.camera) && MenuOptions.canShowCamera {
+			if options.contains(.camera) && PhotoMenuOptions.canShowCamera {
 				Button(action: { state.isCameraPresented = true }) {
 					Label("Camera", systemImage: "camera")
 				}
 			}
-			if options.contains(.files) && MenuOptions.canShowFiles {
+			if options.contains(.files) && PhotoMenuOptions.canShowFiles {
 				Button(action: { state.isFileImporterPresented = true }) {
 					Label("Files", systemImage: "folder")
 				}
@@ -126,10 +146,7 @@ public struct PhotoImportMenu: View {
 				}
 			}
 		} label: {
-			Image(systemName: image != nil ? "photo.fill" : "photo")
-				.buttonStyle(.bordered)
-				.controlSize(.large)
-				.accessibilityAddTraits(.isButton)
+			label()
 		}
 		.menuStyle(.button)
 		.onChange(of: state.importedImage) { _, newValue in

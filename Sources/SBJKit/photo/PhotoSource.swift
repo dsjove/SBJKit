@@ -2,9 +2,9 @@ import SwiftUI
 import UIKit
 import SwiftData
 
-public protocol PhotoSource {
+public protocol PhotoSource: AnyObject {
 	var placeholderPhoto: ImageName { get }
-	var photo: Data? { get set}
+	var photo: Data? { get set }
 	var thumbnail: Data? { get set }
 }
 
@@ -29,7 +29,7 @@ public extension PhotoSource {
 		}
 	}
 
-	private mutating func generateThumbnail() {
+	private func generateThumbnail() {
 		if let image = photoImage {
 			let thumbnail = image.shrinkTo(CGSize(width: 200, height: 200))
 			self.thumbnail = thumbnail.jpegData(compressionQuality: 0.8)

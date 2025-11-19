@@ -2,6 +2,49 @@ import SwiftUI
 import UIKit
 import SwiftData
 
+public struct PhotoThumbailView<Source: PhotoSource>: View {
+	var source: Source
+	let showMenu: Bool
+
+	@State private var editingImage: IdentifiableImage?
+	@State private var viewingImage: IdentifiableImage?
+	@State private var menuImage: IdentifiableImage?
+
+	public init(source: Source, showMenu: Bool = true) {
+		self.source = source
+		self.showMenu = showMenu
+	}
+
+	public var body: some View {
+		PhotoImportMenu(image: Binding {
+					source.photoImage
+				} set: { newImage in
+					if let newImage { // imported or editing
+						editingImage = IdentifiableImage(image: newImage)
+					} else { // clear
+						source.photoImage = nil
+					}
+				}, options: .all) {
+			source.thumbnailView
+		}
+		.fullScreenCover(item: $editingImage) { identifiable in
+			PhotoEditSheet(image: identifiable.image) { result in
+				if let cropped = result {
+					source.photoImage = cropped
+				} // else canceled
+			}
+			dismiss: {
+				editingImage = nil
+			}
+		}
+		.fullScreenCover(item: $viewingImage) { identifiable in
+			PhotoEditSheet(viewing: identifiable.image) {
+				viewingImage = nil
+			}
+		}
+	}
+}
+
 public protocol PhotoDisplayable: AnyObject {
 	associatedtype DiplayView: View
 	var uiImage: UIImage? { get set }
