@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import SwiftData
 
 public protocol PhotoDisplayable: AnyObject {
 	associatedtype DiplayView: View

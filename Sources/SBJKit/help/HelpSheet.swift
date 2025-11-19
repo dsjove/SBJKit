@@ -35,7 +35,7 @@ public struct HelpSheet: View {
 							ToolbarItemGroup(placement: .topBarTrailing) {
 								HelpButton(
 									asset: AssetPath(title: "About", folder: "help", mainBundle: true),
-									systemImage: "",
+									image: .none,
 									auto: true,
 									showAbout: false)
 							}

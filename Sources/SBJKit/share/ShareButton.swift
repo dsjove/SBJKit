@@ -10,7 +10,7 @@ public struct ShareButton: View {
 	}
 
 	public var body: some View {
-		ActionButton("Share", image: "square.and.arrow.up") {
+		ActionButton("Share", image: .system("square.and.arrow.up")) {
 			self.showingShareSheet.toggle()
 		}
 		//TODO: if button is transitory this will never show

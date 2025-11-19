@@ -12,7 +12,7 @@ public struct TagsControlView<T: Taggable>: View {
 	public var body: some View {
 		HStack {
 			if let showTagsSheet {
-				ActionButton("Edit Tags", image: "tag.fill") {
+				ActionButton("Edit Tags", image: .system("tag.fill")) {
 					showTagsSheet()
 				}
 				.buttonStyle(.borderedProminent)

@@ -36,7 +36,7 @@ public struct AssetPath: Equatable, Hashable {
 
 public struct HelpButton: View {
 	let asset: AssetPath
-	let systemImage: String
+	let image: ImageName
 	let auto: Bool
 	let enabled: Bool
 	let showAbout: Bool
@@ -46,14 +46,14 @@ public struct HelpButton: View {
 
 	public init(
 			asset: AssetPath,
-			systemImage: String = "questionmark.circle",
+			image: ImageName = .system("questionmark.circle"),
 			auto: Bool = true,
 			enabled: Bool = true,
 			showAbout: Bool = true,
 			substitutions: [String : String] = [:],
 			showHelp: Bool = false) {
 		self.asset = asset
-		self.systemImage = systemImage
+		self.image = image
 		self.auto = auto
 		self.enabled = enabled && asset.stringValue() != nil
 		self.showAbout = showAbout && HelpButton.hasAbout
@@ -63,7 +63,8 @@ public struct HelpButton: View {
 			"VERSION" : AppInfo.fullVersion,
 			"COMPANY_NAME" : AppInfo.companyName,
 			"EMAIL" : AppInfo.supportEmail,
-			"ICON" : AppInfo.icon?.pngData()?.base64EncodedString() ?? ""
+			"ICON" : AppInfo.icon?.pngData()?.base64EncodedString() ?? "",
+			"STYLE_SHEET" : (AssetPath(title: "StyleSheet", folder: "help", mainBundle: true).stringValue() ?? ""),
 			].merging(substitutions) { (_, new) in new }
 		self.showHelp = showHelp
 	}
@@ -82,7 +83,7 @@ public struct HelpButton: View {
 
 	public var body: some View {
 		if enabled {
-			ActionButton(systemImage.isEmpty ? asset.title : "Help", image: systemImage) {
+			ActionButton(image.isEmpty ? asset.title : "Help", image: image) {
 				showHelp = true
 			}
 			.id(asset.title)

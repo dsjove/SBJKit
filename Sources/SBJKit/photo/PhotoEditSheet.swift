@@ -86,32 +86,32 @@ public struct PhotoEditSheet: View {
 					ToolbarItemGroup(placement: .topBarTrailing) {
 						if isEditing {
 							if showMarkup {
-								ActionButton("Clear", image: "eraser") {
+								ActionButton("Clear", image: .system("eraser")) {
 									markup.clear()
 								}
-								ActionButton("Undo", image: "arrow.uturn.backward") {
+								ActionButton("Undo", image: .system("arrow.uturn.backward")) {
 									markup.undo()
 								}
-								ActionButton("Redo", image: "arrow.uturn.forward") {
+								ActionButton("Redo", image: .system("arrow.uturn.forward")) {
 									markup.redo()
 								}
 							} else {
-								ActionButton("Flip", image: "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right") {
+								ActionButton("Flip", image: .system("arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right")) {
 									transform.flip()
 								}
-								ActionButton("Rotate", image: "rotate.left") {
+								ActionButton("Rotate", image: .system("rotate.left")) {
 									transform.rotate()
 								}
-								ActionButton("Reset", image: "inset.filled.square.dashed") {
+								ActionButton("Reset", image: .system("inset.filled.square.dashed")) {
 									reset()
 								}
 							}
-							ActionButton(showMarkup ? "Hide Markup" : "Markup", image: showMarkup ? "pencil.slash" : "pencil.tip"
+							ActionButton(showMarkup ? "Hide Markup" : "Markup", image: .system(showMarkup ? "pencil.slash" : "pencil.tip")
 							) {
 								showMarkup.toggle()
 							}
 						} else {
-							ActionButton("Reset", image: "inset.filled.square.dashed") {
+							ActionButton("Reset", image: .system("inset.filled.square.dashed")) {
 								reset()
 							}
 							ShareButton {
