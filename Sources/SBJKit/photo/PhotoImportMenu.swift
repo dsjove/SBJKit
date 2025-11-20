@@ -13,9 +13,11 @@ public struct PhotoMenuOptions: OptionSet, Sendable {
 	public static let clear = PhotoMenuOptions(rawValue: 1 << 5)
 	// Viewing
 	// TODO: 'Share': ShareButton currently cannot work from a menu
-	// TODO: 'View': needs more context in callbacks
+	public static let view = PhotoMenuOptions(rawValue: 1 << 5)
 
-	public static let all: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
+	public static let change: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
+
+	public static let all: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear, .view]
 
 	public init(rawValue: Int) {
 		self.rawValue = rawValue
@@ -75,6 +77,8 @@ fileprivate class PhotoMenuState: ObservableObject {
 	@Published var isPhotoClearPresented = false
 	@Published var canPasteImage = false
 	@Published var importedImage: UIImage? = nil
+
+	@Published var viewingImage: IdentifiableImage?
 }
 
 public struct PhotoImportMenu<Content: View>: View {
@@ -84,7 +88,7 @@ public struct PhotoImportMenu<Content: View>: View {
 	
 	private let options: PhotoMenuOptions
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .all) where Content == _DefaultPhotoImportMenuLabel {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change) where Content == _DefaultPhotoImportMenuLabel {
 		self._image = image
 		self.options = options
 		self.label = {
@@ -92,7 +96,7 @@ public struct PhotoImportMenu<Content: View>: View {
 		}
 	}
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .all, @ViewBuilder label: @escaping () -> Content) {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change, @ViewBuilder label: @escaping () -> Content) {
 		self._image = image
 		self.options = options
 		self.label = label
@@ -100,6 +104,13 @@ public struct PhotoImportMenu<Content: View>: View {
 
 	public var body: some View {
 		Menu {
+			if options.contains(.view), let image {
+				Button() {
+					state.viewingImage = IdentifiableImage(image: image)
+				} label: {
+					Label("View", systemImage: "eye")
+				}
+			}
 			if options.contains(.photos) && PhotoMenuOptions.canShowPhotos {
 				Button(action: { state.isPickerPresented = true }) {
 					Label("Photos", systemImage: "photo.on.rectangle")
@@ -147,6 +158,11 @@ public struct PhotoImportMenu<Content: View>: View {
 			}
 		} label: {
 			label()
+				.fullScreenCover(item: $state.viewingImage) { identifiable in
+					PhotoEditSheet(viewing: identifiable.image) {
+						state.viewingImage = nil
+					}
+				}
 		}
 		.menuStyle(.button)
 		.onChange(of: state.importedImage) { _, newValue in

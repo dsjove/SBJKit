@@ -4,12 +4,12 @@ public extension PersistentModel {
 	func deleteNow() {
 		let mc = self.modelContext
 		mc?.delete(self)
-		do {
-			try mc?.save()
-		}
-		catch {
-			//assertionFailure("Save failed: \(error)")
-		}
+//		do {
+//			try mc?.save()
+//		}
+//		catch {
+//			//assertionFailure("Save failed: \(error)")
+//		}
 	}
 
 	@discardableResult
