@@ -1,5 +1,11 @@
 import SwiftUI
 
+extension FixedWidthInteger {
+	var singleBitValue: Self? {
+		(self != 0 && (self & (self - 1)) == 0) ? self : nil
+	}
+}
+
 public struct PhotoMenuOptions: OptionSet, Sendable {
 	public let rawValue: Int
 
@@ -15,11 +21,13 @@ public struct PhotoMenuOptions: OptionSet, Sendable {
 	public static let view = PhotoMenuOptions(rawValue: 1 << 6)
 	public static let share = PhotoMenuOptions(rawValue: 1 << 7)
 
-	public static let change: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
+	public static let none: PhotoMenuOptions = []
 
-	public static let readOnly: PhotoMenuOptions = [.view/*, .share*/]
-
-	public static let all: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear, .view/*, .share*/]
+	public static let imports: PhotoMenuOptions = [.photos, .camera, .files, .paste]
+	public static let edits: PhotoMenuOptions = [.edit, .clear]
+	public static let reading: PhotoMenuOptions = [.view, .share]
+	public static let all: PhotoMenuOptions = [imports, edits, reading]
+	public static let modify: PhotoMenuOptions = [imports, edits]
 
 	public init(rawValue: Int) {
 		self.rawValue = rawValue
@@ -93,7 +101,7 @@ public struct PhotoImportMenu<Content: View>: View {
 	private let options: PhotoMenuOptions
 	private let editImports: Bool
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change, editImports: Bool = false) where Content == _DefaultPhotoImportMenuLabel {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .modify, editImports: Bool = false) where Content == _DefaultPhotoImportMenuLabel {
 		self._image = image
 		self.options = options
 		self.editImports = editImports
@@ -102,7 +110,7 @@ public struct PhotoImportMenu<Content: View>: View {
 		}
 	}
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change, editImports: Bool = false, @ViewBuilder label: @escaping () -> Content) {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .modify, editImports: Bool = false, @ViewBuilder label: @escaping () -> Content) {
 		self._image = image
 		self.options = options
 		self.editImports = editImports
@@ -244,3 +252,4 @@ public struct PhotoImportMenu<Content: View>: View {
 		}
 	}
 }
+

@@ -65,7 +65,7 @@ public struct PhotoDisplayView<Item: PhotoDisplayable>: View {
 					} else { // clear
 						item.uiImage = nil
 					}
-				}, options: .change, editImports: false)
+				}, options: .modify, editImports: false)
 				.padding(6)
 				.background(
 					RoundedRectangle(cornerRadius: 10, style: .continuous)
