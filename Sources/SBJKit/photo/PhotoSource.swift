@@ -9,6 +9,10 @@ public protocol PhotoSource: AnyObject {
 }
 
 public extension PhotoSource {
+	var hasImage: Bool {
+		photo != nil
+	}
+
 	var photoImage: UIImage? {
 		get {
 			UIImage(data: photo)

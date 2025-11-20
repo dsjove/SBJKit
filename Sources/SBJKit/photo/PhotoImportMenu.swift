@@ -12,12 +12,14 @@ public struct PhotoMenuOptions: OptionSet, Sendable {
 	public static let edit = PhotoMenuOptions(rawValue: 1 << 4)
 	public static let clear = PhotoMenuOptions(rawValue: 1 << 5)
 	// Viewing
-	// TODO: 'Share': ShareButton currently cannot work from a menu
-	public static let view = PhotoMenuOptions(rawValue: 1 << 5)
+	public static let view = PhotoMenuOptions(rawValue: 1 << 6)
+	public static let share = PhotoMenuOptions(rawValue: 1 << 7)
 
 	public static let change: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear]
 
-	public static let all: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear, .view]
+	public static let readOnly: PhotoMenuOptions = [.view/*, .share*/]
+
+	public static let all: PhotoMenuOptions = [.photos, .camera, .files, .paste, .edit, .clear, .view/*, .share*/]
 
 	public init(rawValue: Int) {
 		self.rawValue = rawValue
@@ -79,6 +81,8 @@ fileprivate class PhotoMenuState: ObservableObject {
 	@Published var importedImage: UIImage? = nil
 
 	@Published var viewingImage: IdentifiableImage?
+	@Published var shareImage: IdentifiableImage?
+	@Published var editingImage: IdentifiableImage?
 }
 
 public struct PhotoImportMenu<Content: View>: View {
@@ -87,28 +91,39 @@ public struct PhotoImportMenu<Content: View>: View {
     private let label: () -> Content
 	
 	private let options: PhotoMenuOptions
+	private let editImports: Bool
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change) where Content == _DefaultPhotoImportMenuLabel {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change, editImports: Bool = false) where Content == _DefaultPhotoImportMenuLabel {
 		self._image = image
 		self.options = options
+		self.editImports = editImports
 		self.label = {
 			_DefaultPhotoImportMenuLabel(isFilled: image.wrappedValue != nil)
 		}
 	}
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change, @ViewBuilder label: @escaping () -> Content) {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .change, editImports: Bool = false, @ViewBuilder label: @escaping () -> Content) {
 		self._image = image
 		self.options = options
+		self.editImports = editImports
 		self.label = label
 	}
 
 	public var body: some View {
+		//TODO: if options is just 1 item, do a tap for that one item
 		Menu {
 			if options.contains(.view), let image {
 				Button() {
 					state.viewingImage = IdentifiableImage(image: image)
 				} label: {
 					Label("View", systemImage: "eye")
+				}
+			}
+			if options.contains(.share), let image {
+				Button() {
+					state.shareImage = IdentifiableImage(image: image)
+				} label: {
+					Label("Share", systemImage: "square.and.arrow.up")
 				}
 			}
 			if options.contains(.photos) && PhotoMenuOptions.canShowPhotos {
@@ -163,49 +178,69 @@ public struct PhotoImportMenu<Content: View>: View {
 						state.viewingImage = nil
 					}
 				}
-		}
-		.menuStyle(.button)
-		.onChange(of: state.importedImage) { _, newValue in
-			if let newValue {
-				state.importedImage = nil
-				image = newValue
-			}
-		}
-		.sheet(isPresented: $state.isPickerPresented) {
-			PhotoPickerView(image: $state.importedImage)
-		}
-		.fullScreenCover(isPresented: $state.isCameraPresented) {
-			CameraPickerView(image: $state.importedImage)
-		}
-		.fileImporter(
-			isPresented: $state.isFileImporterPresented,
-			allowedContentTypes: [.image],
-			allowsMultipleSelection: false
-		) { result in
-			switch result {
-			case .success(let urls):
-				if let url = urls.first {
-					if let data = try? Data(contentsOf: url),
-					   let uiImage = UIImage(data: data) {
-						DispatchQueue.main.async {
-							state.importedImage = uiImage
+				.sheet(item: $state.shareImage) { identifiable in
+					ShareSheet(activityItems: [identifiable.image], applicationActivities: nil)
+				}
+				.sheet(isPresented: $state.isPickerPresented) {
+					PhotoPickerView(image: $state.importedImage)
+				}
+				.fullScreenCover(isPresented: $state.isCameraPresented) {
+					CameraPickerView(image: $state.importedImage)
+				}
+				.fileImporter(
+					isPresented: $state.isFileImporterPresented,
+					allowedContentTypes: [.image],
+					allowsMultipleSelection: false
+				) { result in
+					switch result {
+					case .success(let urls):
+						if let url = urls.first {
+							if let data = try? Data(contentsOf: url),
+							   let uiImage = UIImage(data: data) {
+								DispatchQueue.main.async {
+									state.importedImage = uiImage
+								}
+							}
 						}
+					case .failure:
+						break
 					}
 				}
-			case .failure:
-				break
-			}
+				.alert("Clear Photo", isPresented: $state.isPhotoClearPresented) {
+					Button("Clear", role: .destructive) {
+						DispatchQueue.main.async {
+							self.image = nil
+						}
+					}
+					Button("Cancel", role: .cancel) { }
+				}
+				.onChange(of: state.importedImage) { _, newValue in
+					state.importedImage = nil
+					if let newValue {
+						if editImports {
+							DispatchQueue.main.async {
+								state.editingImage = IdentifiableImage(image: newValue)
+							}
+						}
+						else {
+							image = newValue
+						}
+					} // else canceled
+				}
+				.fullScreenCover(item: $state.editingImage) { identifiable in
+					PhotoEditSheet(image: identifiable.image) { result in
+						if let result {
+							image = result
+						} // else canceled
+					}
+					dismiss: {
+						state.editingImage = nil
+					}
+				}
 		}
+		.menuStyle(.button)
 		.onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
 			state.canPasteImage = UIPasteboard.general.hasImages
-		}
-		.alert("Clear Photo", isPresented: $state.isPhotoClearPresented) {
-			Button("Clear", role: .destructive) {
-				DispatchQueue.main.async {
-					self.image = nil
-				}
-			}
-			Button("Cancel", role: .cancel) { }
 		}
 	}
 }
