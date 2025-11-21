@@ -18,11 +18,11 @@ public struct PhotoThumbailView<Source: PhotoSource>: View {
 					} set: {
 						source.photoImage = $0
 					}, options: .all, editImports: true) {
-				source.thumbnailView
+				source.thumbnailView()
 			}
 		}
 		else {
-			source.thumbnailView
+			source.thumbnailView()
 		}
 	}
 }

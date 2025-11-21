@@ -9,6 +9,8 @@ public protocol PhotoSource: AnyObject {
 }
 
 public extension PhotoSource {
+	var placeholderPhoto: ImageName { .system("photo.circle") }
+
 	var hasImage: Bool {
 		photo != nil
 	}
@@ -45,7 +47,7 @@ public extension PhotoSource {
 
 public extension PhotoSource {
 	@ViewBuilder
-	var thumbnailView: some View {
+	func thumbnailView(size: CGSize = .init(width: 32, height: 32)) -> some View {
 		if let image = thumbnailImage {
 			Image(uiImage: image)
 				.resizable()
