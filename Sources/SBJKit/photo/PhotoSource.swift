@@ -4,16 +4,21 @@ import SwiftData
 
 public protocol PhotoSource: AnyObject {
 	var placeholderPhoto: ImageName { get }
+	var thumbnailSize: CGSize { get }
 	var photo: Data? { get set }
 	var thumbnail: Data? { get set }
+	func photoChanged()
 }
 
 public extension PhotoSource {
 	var placeholderPhoto: ImageName { .none }
+	var thumbnailSize: CGSize { .init(width: 200, height: 200) }
 
 	var hasImage: Bool {
 		photo != nil
 	}
+
+	func photoChanged() {}
 
 	var photoImage: UIImage? {
 		get {
@@ -26,6 +31,7 @@ public extension PhotoSource {
 				self.photo = nil
 			}
 			generateThumbnail()
+			photoChanged()
 		}
 	}
 
@@ -37,11 +43,17 @@ public extension PhotoSource {
 
 	private func generateThumbnail() {
 		if let image = photoImage {
-			let thumbnail = image.shrinkTo(CGSize(width: 200, height: 200))
+			let thumbnail = image.shrinkTo(thumbnailSize)
 			self.thumbnail = thumbnail.jpegData(compressionQuality: 0.8)
 		} else {
 			self.thumbnail = nil
 		}
+	}
+}
+
+public extension PhotoSource where Self: PersistentModel {
+	func photoChanged() {
+		saveNow()
 	}
 }
 

@@ -48,7 +48,7 @@ public final class TagBagSwiftData<D>: ObservableObject, @MainActor TagBag
 			return existing
 		}
 		let newTag = delegate.createTag(named: name)
-		tags.addModel(newTag)
+		tags.addIdentified(newTag)
 
 		modelContext.insert(newTag)
 		performSave()
@@ -59,7 +59,7 @@ public final class TagBagSwiftData<D>: ObservableObject, @MainActor TagBag
 		loadTagsIfNeeded()
 		for tag in toBeDeleted {
 			delegate.willDelete(tag: tag)
-			tags.removeModel(tag)
+			tags.removeIdentified(tag)
 			DispatchQueue.main.async {
 				self.modelContext.delete(tag)
 				self.performSave()
