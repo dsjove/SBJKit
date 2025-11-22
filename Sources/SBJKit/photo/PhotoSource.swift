@@ -9,7 +9,7 @@ public protocol PhotoSource: AnyObject {
 }
 
 public extension PhotoSource {
-	var placeholderPhoto: ImageName { .system("photo.circle") }
+	var placeholderPhoto: ImageName { .none }
 
 	var hasImage: Bool {
 		photo != nil
@@ -47,18 +47,22 @@ public extension PhotoSource {
 
 public extension PhotoSource {
 	@ViewBuilder
-	func thumbnailView(size: CGSize = .init(width: 32, height: 32)) -> some View {
+	func thumbnailView(size: CGSize = .init(width: 44, height: 44)) -> some View {
 		if let image = thumbnailImage {
 			Image(uiImage: image)
 				.resizable()
 				.scaledToFit()
-				.frame(width: 44, height: 44)
+				.frame(width: size.width, height: size.height)
 				.clipShape(RoundedRectangle(cornerRadius: 8))
-		} else {
+		}
+		else if case .none = placeholderPhoto {
+			EmptyView()
+		}
+		else {
 			Image(placeholderPhoto)
 				.resizable()
 				.scaledToFit()
-				.frame(width: 44, height: 44)
+				.frame(width: size.width, height: size.height)
 				.clipShape(RoundedRectangle(cornerRadius: 8))
 		}
 	}

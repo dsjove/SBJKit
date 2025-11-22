@@ -2,6 +2,7 @@ import SwiftData
 
 public extension PersistentModel {
 	func deleteNow() {
+		guard !isDeleted else { return }
 		let mc = self.modelContext
 		mc?.delete(self)
 //		do {

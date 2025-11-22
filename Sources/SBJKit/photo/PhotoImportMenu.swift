@@ -101,7 +101,7 @@ public struct PhotoImportMenu<Content: View>: View {
 	private let options: PhotoMenuOptions
 	private let editImports: Bool
 
-	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .modify, editImports: Bool = false) where Content == _DefaultPhotoImportMenuLabel {
+	public init(image: Binding<UIImage?>, options: PhotoMenuOptions = .all, editImports: Bool = true) where Content == _DefaultPhotoImportMenuLabel {
 		self._image = image
 		self.options = options
 		self.editImports = editImports
