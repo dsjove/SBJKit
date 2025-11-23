@@ -59,7 +59,7 @@ public extension PhotoSource where Self: PersistentModel {
 
 public extension PhotoSource {
 	@ViewBuilder
-	func thumbnailView(size: CGSize = .init(width: 44, height: 44)) -> some View {
+	func thumbnailView(size: CGSize = .init(width: 32, height: 32)) -> some View {
 		if let image = thumbnailImage {
 			Image(uiImage: image)
 				.resizable()

@@ -13,6 +13,7 @@ public struct SearchField<S: SearchProtocol>: View {
 		TextField(titleKey, text: $searching.text)
 			.autocapitalization(.none)
 			.disableAutocorrection(true)
+			.submitLabel(.done)
 			.padding(8)
 			.background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
 			.overlay(
