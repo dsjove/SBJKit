@@ -33,6 +33,10 @@ public struct NumberTextField: View {
 			value, formatter:
 			RangeNumberFormatter(range: range, defaultValue: defaultValue))
 				.keyboardType(keyboardType)
+		.keyboardType(.numbersAndPunctuation)
+		.lineLimit(1)
+		.submitLabel(.done)
+		.multilineTextAlignment(.leading)
 	}
 
 	private var keyboardType: UIKeyboardType {

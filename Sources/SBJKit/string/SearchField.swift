@@ -20,7 +20,7 @@ public struct SearchField<S: SearchProtocol>: View {
 				RoundedRectangle(cornerRadius: 10)
 					.stroke(
 						searching.isEmpty ? Color(.separator) : Color.accentColor,
-						lineWidth: searching.isEmpty ? 0 : 2)
+						lineWidth: searching.isEmpty ? 1 : 2)
 			)
 	}
 }
