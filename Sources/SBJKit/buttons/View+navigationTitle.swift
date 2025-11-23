@@ -20,3 +20,13 @@ public extension View {
 		modifier(NavigationTitleHighlighted(alerted: alerted))
 	}
 }
+
+public extension View {
+	func oneLiner() -> some View {
+		self
+			.textFieldStyle(.roundedBorder)
+			.multilineTextAlignment(.leading)
+			.lineLimit(1)
+			.submitLabel(.done)
+	}
+}
