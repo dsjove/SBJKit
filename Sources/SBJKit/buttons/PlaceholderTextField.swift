@@ -17,6 +17,7 @@ public struct PlaceholderTextField<Label: View>: View {
 					.frame(maxWidth: .infinity, alignment: .leading)
 					.padding(.top, 0)
 					.padding(.leading, 5)
+                    .allowsHitTesting(false)
 			}
 			TextEditor(text: $text)
 		}

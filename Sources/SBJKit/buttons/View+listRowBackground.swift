@@ -31,3 +31,28 @@ private struct _ConditionalMinHeight: ViewModifier {
         }
     }
 }
+
+public struct FixedFormListBackground: ViewModifier {
+	var cornerRadius: CGFloat = 24
+
+	public func body(content: Content) -> some View {
+		ZStack {
+			RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+				.fill(Color(.systemGroupedBackground))
+			.padding(.horizontal, 20)
+			RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+				.stroke(.separator.opacity(0.15), lineWidth: 0.5)
+			.padding(.horizontal, 20)
+			content
+				.scrollContentBackground(.hidden)
+				.padding(.horizontal, 20)
+				.clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+		}
+	}
+}
+
+public extension View {
+	func fixedFormListBackground(cornerRadius: CGFloat = 24) -> some View {
+		modifier(FixedFormListBackground(cornerRadius: cornerRadius))
+	}
+}
