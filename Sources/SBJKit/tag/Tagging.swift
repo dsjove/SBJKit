@@ -13,6 +13,8 @@ public protocol Tagging:
 
 	var displayName: String { get }
 	func predicated(_ search: String) -> Bool
+
+	func fullDelete()
 }
 
 public extension Tagging {
@@ -39,6 +41,9 @@ public extension Tagging {
 
 	var debugDescription: String {
 		"\(Self.self): \(name)\(self.color.debugDescription)"
+	}
+	
+	func fullDelete() {
 	}
 }
 
@@ -70,7 +75,7 @@ public extension Tagging {
 public protocol Taggable {
 	associatedtype Tag: Tagging
 	func hasTag(_ tag: Tag) -> Bool
-	var selectedTags: [Tag] { get }
+	var sortedTags: [Tag] { get }
 	func addTag(_ tag: Tag, makePrimary: Bool)
 	func removeTag(_ tag: Tag)
 	var primaryTag: Tag? { get }
@@ -78,7 +83,7 @@ public protocol Taggable {
 
 public extension Taggable {
 	func hasTag(_ tag: Tag) -> Bool {
-		selectedTags.contains(where: { $0 === tag })
+		sortedTags.containsIdentified(tag)
 	}
 
 	func addTag(_ tag: Tag) {
@@ -91,7 +96,6 @@ public protocol TagBag: AnyObject, Observable {
 	func tags(_ search: String) -> [Tag]
 	func addNewTag(named name: String) -> Tag
 	func deleteTags(_ toBeDeleted: [Tag])
-	func dismissed()
 }
 
 public extension TagBag {
@@ -104,10 +108,8 @@ public protocol TagBagDelegate {
 	associatedtype Tag: Tagging
 	func seedTags()
 	func createTag(named: String) -> Tag
-	func willDelete(tag: Tag)
 }
 
 extension TagBagDelegate {
 	func seedTags() {}
-	func willDelete(tag: Tag) {}
 }

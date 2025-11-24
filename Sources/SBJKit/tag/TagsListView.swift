@@ -8,7 +8,7 @@ public struct TagsListView<T: Taggable>: View {
 	}
 
 	public var body: some View {
-		let sortedTags = taggable.selectedTags
+		let sortedTags = taggable.sortedTags
 		HStack(spacing: 10) {
 			if sortedTags.isEmpty {
 				Text("No Tags")

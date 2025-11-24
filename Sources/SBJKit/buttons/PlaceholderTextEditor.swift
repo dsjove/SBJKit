@@ -6,7 +6,6 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 	let numberOfLines: Int
 
 	@State private var showSheet = false
-	@FocusState private var isFocused: Bool
 
 	public init(@ViewBuilder _ placeholder: () -> Placeholder, text: Binding<String>, numberOfLines: Int = 3) {
 		self._text = text
@@ -22,6 +21,7 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 
 	public var body: some View {
 		ZStack(alignment: .topLeading) {
+			//TODO: if num lines < 0 present as trailing truncated readonly text
 			TextEditor(text: $text)
 				.frame(height: estimatedHeight)
 				.padding(.trailing, 32)
@@ -51,14 +51,7 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 		.sheet(isPresented: $showSheet) {
 			NavigationStack {
 				TextEditor(text: $text)
-					.focused($isFocused)
 					.padding()
-					.task {
-						//TODO: does not work
-						DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-							isFocused = true
-						}
-					}
 					.navigationBarTitleDisplayMode(.inline)
 					.toolbar {
 						ToolbarItem(placement: .principal) {

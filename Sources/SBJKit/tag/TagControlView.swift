@@ -17,7 +17,7 @@ public struct TagsControlView<T: Taggable>: View {
 				}
 				.buttonStyle(.borderedProminent)
 			}
-			let sortedTags = taggable.selectedTags
+			let sortedTags = taggable.sortedTags
 			ScrollView(.horizontal, showsIndicators: false) {
 				HStack(spacing: 10) {
 					if sortedTags.isEmpty {

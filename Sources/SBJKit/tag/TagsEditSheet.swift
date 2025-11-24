@@ -105,7 +105,6 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 			.toolbar {
 				ToolbarItemGroup(placement: .topBarLeading) {
 					DismissButton {
-						tagBag.dismissed()
 						dismiss()
 					}
 				}
