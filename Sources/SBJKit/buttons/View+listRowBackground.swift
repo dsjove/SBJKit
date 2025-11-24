@@ -21,17 +21,6 @@ public extension View {
 	}
 }
 
-private struct _ConditionalMinHeight: ViewModifier {
-    let minHeight: Double?
-    func body(content: Content) -> some View {
-        if let minHeight {
-            content.frame(minHeight: minHeight)
-        } else {
-            content
-        }
-    }
-}
-
 public struct FixedFormListBackground: ViewModifier {
 	var cornerRadius: CGFloat = 24
 
