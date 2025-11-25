@@ -42,7 +42,7 @@ where F: TagBagFactory, F.Tag: PersistentModel {
 			return tags.sorted().filter { !$0.isDeleted }
 		}
 		let lc = search.lowercased()
-		return tags.filter { $0.predicated(lc) }.sorted().filter { !$0.isDeleted }
+		return tags.filter { $0.predicated(search: lc) }.sorted().filter { !$0.isDeleted }
 	}
 
 	public func addNewTag(named name: String) -> Tag {

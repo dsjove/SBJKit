@@ -6,6 +6,7 @@ public protocol Tagging:
 	AnyObject,
 	Observable,
 	Identifiable,
+	Predicated,
 	CustomDebugStringConvertible,
 	Comparable where ID: Comparable {
 	
@@ -13,7 +14,6 @@ public protocol Tagging:
 	var color: CodableColor { get set }
 
 	var displayName: String { get }
-	func predicated(_ search: String) -> Bool
 
 	func fullDelete()
 }
@@ -39,11 +39,9 @@ public extension Tagging {
 		return lhs.id < rhs.id
 	}
 
-	func predicated(_ search: String) -> Bool {
-		if search.isEmpty {
-			return true
-		}
-		return name.lowercased().contains(search.lowercased())
+	func predicated(search: String) -> Bool {
+		guard let query = search.querify else { return true }
+		return name.predicated(search: query)
 	}
 
 	var debugDescription: String {
