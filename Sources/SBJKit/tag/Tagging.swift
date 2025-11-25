@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import SwiftData
 
 public protocol Tagging:
 	AnyObject,
@@ -15,6 +16,12 @@ public protocol Tagging:
 	func predicated(_ search: String) -> Bool
 
 	func fullDelete()
+}
+
+public extension Tagging where Self: PersistentModel {
+	func fullDelete() {
+		self.deleteNow()
+	}
 }
 
 public extension Tagging {
@@ -72,27 +79,46 @@ public extension Tagging {
 	}
 }
 
-public protocol Taggable {
+public protocol Taggable: AnyObject {
 	associatedtype Tag: Tagging
+	
 	func hasTag(_ tag: Tag) -> Bool
 	var sortedTags: [Tag] { get }
 	func addTag(_ tag: Tag, makePrimary: Bool)
 	func removeTag(_ tag: Tag)
-	var primaryTag: Tag? { get }
+
+	var tags: [Tag]! { get set }
+	var primaryTag: Tag? { get set }
 }
 
 public extension Taggable {
 	func hasTag(_ tag: Tag) -> Bool {
-		sortedTags.containsIdentified(tag)
+		tags.containsIdentified(tag)
 	}
 
 	func addTag(_ tag: Tag) {
 		addTag(tag, makePrimary: false)
 	}
+
+	var sortedTags: [Tag] {
+		return tags.sorted()
+	}
+
+	func addTag(_ tag: Tag, makePrimary: Bool = false) {
+		tags.addIdentified(tag)
+		if makePrimary || primaryTag == nil {
+			primaryTag = tag
+		}
+	}
+
+	func removeTag(_ tag: Tag) {
+		tags.removeIdentified(tag)
+	}
 }
 
 public protocol TagBag: AnyObject, Observable {
 	associatedtype Tag: Tagging
+	var title: String { get }
 	func tags(_ search: String) -> [Tag]
 	func addNewTag(named name: String) -> Tag
 	func deleteTags(_ toBeDeleted: [Tag])
@@ -104,12 +130,14 @@ public extension TagBag {
 	}
 }
 
-public protocol TagBagDelegate {
+public protocol TagBagFactory {
 	associatedtype Tag: Tagging
+	var title: String { get }
 	func seedTags()
 	func createTag(named: String) -> Tag
 }
 
-extension TagBagDelegate {
+public extension TagBagFactory {
+	var title: String { "Tags" }
 	func seedTags() {}
 }

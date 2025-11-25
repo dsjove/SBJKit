@@ -3,25 +3,28 @@ import SwiftData
 import Foundation
 
 @MainActor
-public final class TagBagSwiftData<D>: ObservableObject, @MainActor TagBag
-		where D: TagBagDelegate, D.Tag: PersistentModel {
-	public typealias Tag = D.Tag
-	public typealias Delegate = D
+public final class TagBagSwiftData<F>: ObservableObject, @MainActor TagBag
+where F: TagBagFactory, F.Tag: PersistentModel {
+	public typealias Tag = F.Tag
+	public typealias Factory = F
+
 	private let modelContext: ModelContext
-	private let delegate: D
+	private let factory: Factory
 	private var didLoadTags = false
 	
 	@Published public private(set) var tags: [Tag] = []
 
-	public init(modelContext: ModelContext, delegate: Delegate) {
+	public var title: String { factory.title }
+
+	public init(modelContext: ModelContext, factory: Factory) {
 		self.modelContext = modelContext
-		self.delegate = delegate
+		self.factory = factory
 	}
 
 	private func loadTagsIfNeeded() {
 		guard !didLoadTags else { return }
 		do {
-			delegate.seedTags()
+			factory.seedTags()
 			let tags = try modelContext.fetch(FetchDescriptor<Tag>())
 			self.didLoadTags = tags.isEmpty == false
 			if self.didLoadTags {
@@ -47,7 +50,7 @@ public final class TagBagSwiftData<D>: ObservableObject, @MainActor TagBag
 		if let existing = tags.first(where: {$0.name == name}) {
 			return existing
 		}
-		let newTag = delegate.createTag(named: name)
+		let newTag = factory.createTag(named: name)
 		tags.addIdentified(newTag)
 		newTag.insertNow(modelContext)
 		return newTag

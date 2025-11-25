@@ -6,8 +6,8 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 
 	@Environment(\.dismiss) private var dismiss
 
-	@Bindable public var tagBag: B
-	public let taggable: T?
+	@Bindable var tagBag: B
+	let taggable: T?
 
 	@State private var searchText = ""
 	@State private var editColorTag: Tag?
@@ -101,7 +101,7 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 					}
 				}
 			}
-			.navigationBarTitle("Tags", displayMode: .inline)
+			.navigationBarTitle(tagBag.title, displayMode: .inline)
 			.toolbar {
 				ToolbarItemGroup(placement: .topBarLeading) {
 					DismissButton {
