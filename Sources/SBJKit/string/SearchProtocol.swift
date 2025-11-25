@@ -26,6 +26,9 @@ public extension Array where Element: Predicated {
 	func predicated(search: String) -> Bool {
 		contains(where: { $0.predicated(search: search) })
 	}
+	func filter(search: String) -> [Element] {
+		filter({ $0.predicated(search: search) })
+	}
 }
 
 extension String: SearchProtocol {

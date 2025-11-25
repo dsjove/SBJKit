@@ -10,7 +10,6 @@ where F: TagBagFactory, F.Tag: PersistentModel {
 
 	private let modelContext: ModelContext
 	private let factory: Factory
-	private var didLoadTags = false
 	
 	@Published public private(set) var tags: [Tag] = []
 
@@ -22,27 +21,18 @@ where F: TagBagFactory, F.Tag: PersistentModel {
 	}
 
 	private func loadTagsIfNeeded() {
-		guard !didLoadTags else { return }
+		guard tags.isEmpty else { return }
 		do {
-			factory.seedTags()
-			let tags = try modelContext.fetch(FetchDescriptor<Tag>())
-			self.didLoadTags = tags.isEmpty == false
-			if self.didLoadTags {
-				DispatchQueue.main.async {
-					self.tags = tags
-				}
-			}
+			//factory.seedTags()
+			let fetched = try modelContext.fetch(FetchDescriptor<Tag>())
+			self.tags = fetched
 		} catch {
 		}
 	}
 
 	public func tags(_ search: String) -> [Tag] {
 		loadTagsIfNeeded()
-		if search.isEmpty {
-			return tags.sorted().filter { !$0.isDeleted }
-		}
-		let lc = search.lowercased()
-		return tags.filter { $0.predicated(search: lc) }.sorted().filter { !$0.isDeleted }
+		return tags.filter(search: search)
 	}
 
 	public func addNewTag(named name: String) -> Tag {
