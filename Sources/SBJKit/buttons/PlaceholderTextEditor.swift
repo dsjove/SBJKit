@@ -52,6 +52,10 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 			NavigationStack {
 				TextEditor(text: $text)
 					.padding()
+					.overlay(
+						RoundedRectangle(cornerRadius: 8)
+							.stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+					)
 					.navigationBarTitleDisplayMode(.inline)
 					.toolbar {
 						ToolbarItem(placement: .principal) {

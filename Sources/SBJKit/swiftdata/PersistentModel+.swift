@@ -1,4 +1,25 @@
+import Foundation
 import SwiftData
+
+public extension PersistentIdentifier {
+	var base64String: String? {
+		let encoder = JSONEncoder()
+		guard let data = try? encoder.encode(self) else { return nil }
+		return data.base64EncodedString()
+	}
+
+	init?(base64String: String) {
+		guard let data = Data(base64Encoded: base64String)
+			else { return nil }
+		guard let identifier = try? JSONDecoder().decode(PersistentIdentifier.self, from: data)
+			else { return nil }
+		self = identifier
+	}
+	
+	func find<T: PersistentModel>(_ modelContext: ModelContext?) -> T? {
+		modelContext?.model(for: self) as? T
+	}
+}
 
 public extension PersistentModel {
 	func deleteNow() {
