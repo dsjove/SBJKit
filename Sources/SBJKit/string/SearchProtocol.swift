@@ -11,8 +11,12 @@ public protocol Predicated {
 }
 
 extension String: Predicated {
+	public var trimmed: String {
+		self.trimmingCharacters(in: .whitespacesAndNewlines)
+	}
+
 	public var querify: String? {
-		let query = self.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+		let query = self.trimmed
 		return query.isEmpty ? nil : query
 	}
 

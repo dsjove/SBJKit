@@ -70,7 +70,7 @@ public struct NumberTextField: View {
 		}
 
 		override func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
-			let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+			let trimmed = string.trimmed
 			if trimmed.isEmpty {
 				obj?.pointee = defaultValue as NSNumber
 				return true

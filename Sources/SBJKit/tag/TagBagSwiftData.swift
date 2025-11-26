@@ -29,7 +29,19 @@ where F: TagBagFactory, F.Tag: PersistentModel {
 		} catch {
 		}
 	}
-
+/*
+	func ensureTag(_ name: String, _ color: CodableColor) throws {
+		var descriptor = FetchDescriptor<Tag>(
+			predicate: #Predicate { $0.name == name }
+		)
+		descriptor.fetchLimit = 1
+		if let _ = try context.fetch(descriptor).first {
+			return
+		}
+		let tag = Tag(name, color)
+		context.insert(tag)
+	}
+*/
 	public func tags(_ search: String) -> [Tag] {
 		loadTagsIfNeeded()
 		return tags.filter(search: search)
