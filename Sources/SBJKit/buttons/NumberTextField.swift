@@ -33,6 +33,7 @@ public struct NumberTextField: View {
 			value, formatter:
 			RangeNumberFormatter(range: range, defaultValue: defaultValue))
 				.keyboardType(keyboardType)
+		.multilineTextAlignment(.trailing)
 		.oneLiner()
 		.keyboardType(.numbersAndPunctuation)
 	}
