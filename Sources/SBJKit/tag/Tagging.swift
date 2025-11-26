@@ -30,8 +30,9 @@ public extension Tagging {
 	}
 
 	static func < (lhs: Self, rhs: Self) -> Bool {
-		if lhs.name.localizedCaseInsensitiveCompare(rhs.name) != .orderedSame {
-			return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+		let nameCompare = lhs.name.localizedCaseInsensitiveCompare(rhs.name)
+		if nameCompare != .orderedSame {
+			return nameCompare == .orderedAscending
 		}
 		if lhs.color != rhs.color {
 			return lhs.color < rhs.color
