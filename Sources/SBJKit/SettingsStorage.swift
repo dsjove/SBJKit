@@ -49,10 +49,9 @@ extension Optional: DefaultsValue where Wrapped: DefaultsValue {
 	}
 }
 
-extension PersistentIdentifier: DefaultsValue {
-
-	public var defaultsValue: String? { base64String }
-	public init?(defaults: String) { self.init(base64String: defaults) }
+extension UUID: DefaultsValue {
+	public var defaultsValue: String? { uuidString }
+	public init?(defaults: String) { self.init(uuidString: defaults) }
 }
 
 @propertyWrapper

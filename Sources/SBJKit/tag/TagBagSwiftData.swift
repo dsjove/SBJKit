@@ -63,7 +63,7 @@ where F: TagBagFactory, F.Tag: PersistentModel {
 		for tag in toBeDeleted {
 			tags.removeIdentified(tag)
 			DispatchQueue.main.async {
-				tag.fullDelete()
+				tag.tearDown()
 			}
 		}
 	}

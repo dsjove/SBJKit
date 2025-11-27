@@ -6,6 +6,7 @@ public protocol Tagging:
 	AnyObject,
 	Observable,
 	Identifiable,
+	TearDownable,
 	Predicated,
 	CustomDebugStringConvertible,
 	Comparable where ID: Comparable {
@@ -15,13 +16,7 @@ public protocol Tagging:
 
 	var displayName: String { get }
 
-	func fullDelete()
-}
-
-public extension Tagging where Self: PersistentModel {
-	func fullDelete() {
-		self.deleteNow()
-	}
+	func tearDown()
 }
 
 public extension Tagging {
@@ -47,9 +42,6 @@ public extension Tagging {
 
 	var debugDescription: String {
 		"\(Self.self): \(name)\(self.color.debugDescription)"
-	}
-	
-	func fullDelete() {
 	}
 }
 
