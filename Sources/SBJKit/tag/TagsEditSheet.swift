@@ -71,17 +71,16 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 										Button {
 											taggable.addTag(tag, makePrimary: true)
 										} label: {
-											Image(systemName: taggable.primaryTag?.id == tag.id ? "star.fill" : "star")
+											Image(systemName: taggable.isTagPrimary(tag) ? "star.fill" : "star")
 										}
 										.buttonStyle(.plain)
 									}
 								}
 								.background(
 									RoundedRectangle(cornerRadius: 12, style: .continuous)
-										.fill(taggable?.primaryTag?.id == tag.id ? Color.secondary.opacity(0.13) : Color.clear)
+										.fill((taggable?.isTagPrimary(tag) ?? false) ? Color.secondary.opacity(0.13) : Color.clear)
 										.padding(-8)
 								)
-								.tag(tag.id)
 							}
 							.onDelete { offsets in
 								let toBeDeleted = offsets.map { sortedTags[$0] }

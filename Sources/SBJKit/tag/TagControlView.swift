@@ -32,7 +32,7 @@ public struct TagsControlView<T: Taggable>: View {
 							}
 					} else {
 						ForEach(sortedTags) { item in
-							item.label(isPrimary: item.id == taggable.primaryTag?.id)
+							item.label(isPrimary: taggable.isTagPrimary(item))
 						}
 					}
 				}

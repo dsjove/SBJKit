@@ -17,7 +17,7 @@ public struct TagsListView<T: Taggable>: View {
 					.padding(.trailing)
 			} else {
 				ForEach(sortedTags) { item in
-					item.label(isPrimary: item.id == taggable.primaryTag?.id)
+					item.label(isPrimary: taggable.isTagPrimary(item))
 				}
 			}
 		}

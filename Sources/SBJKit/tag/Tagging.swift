@@ -6,6 +6,7 @@ public protocol Tagging:
 	AnyObject,
 	Observable,
 	Identifiable,
+	Selectable,
 	TearDownable,
 	Predicated,
 	CustomDebugStringConvertible,
@@ -16,12 +17,21 @@ public protocol Tagging:
 
 	var displayName: String { get }
 
-	func tearDown()
+	associatedtype User: Taggable where User.Tag == Self
+	var __users: [User]? { get set }
 }
 
 public extension Tagging {
 	var displayName: String {
 		name
+	}
+
+	func _userRemoved(_ user: User) {
+		__users?.removeIdentified(user)
+	}
+
+	func _tearDownTagRelations() {
+		__users?.forEach { $0.removeTag(self) }
 	}
 
 	static func < (lhs: Self, rhs: Self) -> Bool {
@@ -70,21 +80,34 @@ public extension Tagging {
 	}
 }
 
-public protocol Taggable: AnyObject {
-	associatedtype Tag: Tagging
-	
+public protocol Taggable: AnyObject, Identifiable {
+	associatedtype Tag: Tagging where Tag.User == Self
+
 	func hasTag(_ tag: Tag) -> Bool
 	var sortedTags: [Tag] { get }
 	func addTag(_ tag: Tag, makePrimary: Bool)
 	func removeTag(_ tag: Tag)
 
-	var tags: [Tag]! { get set }
-	var primaryTag: Tag? { get set }
+	var __tags: [Tag]? { get set }
+	var __primaryTagID: UUID? { get set }
 }
 
 public extension Taggable {
+	func isTagPrimary(_ tag: Tag) -> Bool {
+		tag.selectionID == __primaryTagID
+	}
+
+	var primeTag: Tag? {
+		__tags?.findUnique(__primaryTagID)
+	}
+
+	func _tearDownTagRelations() {
+		__primaryTagID = nil
+		__tags?.forEach { $0._userRemoved(self) }
+	}
+
 	func hasTag(_ tag: Tag) -> Bool {
-		tags.containsIdentified(tag)
+		__tags?.containsIdentified(tag) ?? false
 	}
 
 	func addTag(_ tag: Tag) {
@@ -92,18 +115,21 @@ public extension Taggable {
 	}
 
 	var sortedTags: [Tag] {
-		return tags.sorted()
+		return __tags?.sorted() ?? []
 	}
 
 	func addTag(_ tag: Tag, makePrimary: Bool = false) {
-		tags.addIdentified(tag)
-		if makePrimary || primaryTag == nil {
-			primaryTag = tag
+		__tags?.addIdentified(tag)
+		if makePrimary || __primaryTagID == nil {
+			__primaryTagID = tag.selectionID
 		}
 	}
 
 	func removeTag(_ tag: Tag) {
-		tags.removeIdentified(tag)
+		if __primaryTagID == tag.selectionID {
+			__primaryTagID = nil
+		}
+		__tags?.removeIdentified(tag)
 	}
 }
 
