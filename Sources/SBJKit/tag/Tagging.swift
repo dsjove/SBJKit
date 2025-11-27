@@ -6,7 +6,6 @@ public protocol Tagging:
 	AnyObject,
 	Observable,
 	Identifiable,
-	Selectable,
 	TearDownable,
 	Predicated,
 	CustomDebugStringConvertible,
@@ -89,16 +88,16 @@ public protocol Taggable: AnyObject, Identifiable {
 	func removeTag(_ tag: Tag)
 
 	var __tags: [Tag]? { get set }
-	var __primaryTagID: UUID? { get set }
+	var __primaryTagID: Tag.ID? { get set }
 }
 
 public extension Taggable {
 	func isTagPrimary(_ tag: Tag) -> Bool {
-		tag.selectionID == __primaryTagID
+		tag.id == __primaryTagID
 	}
 
 	var primeTag: Tag? {
-		__tags?.findUnique(__primaryTagID)
+		__tags?.findIdentified(__primaryTagID)
 	}
 
 	func _tearDownTagRelations() {
@@ -121,12 +120,12 @@ public extension Taggable {
 	func addTag(_ tag: Tag, makePrimary: Bool = false) {
 		__tags?.addIdentified(tag)
 		if makePrimary || __primaryTagID == nil {
-			__primaryTagID = tag.selectionID
+			__primaryTagID = tag.id
 		}
 	}
 
 	func removeTag(_ tag: Tag) {
-		if __primaryTagID == tag.selectionID {
+		if __primaryTagID == tag.id {
 			__primaryTagID = nil
 		}
 		__tags?.removeIdentified(tag)

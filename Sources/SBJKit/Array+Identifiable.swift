@@ -1,52 +1,17 @@
 import Foundation
 import SwiftData
 
-public protocol Selectable {
-	var selectionID: UUID { get }
-}
-
-public extension Array where Element: Selectable {
-	func uniqueIndex(_ model: Element?) -> Index? {
-		firstIndex { $0.selectionID == model?.selectionID }
-	}
-
-	func findUnique(_ id: UUID?) -> Element? {
-		guard let id else { return nil }
-		return first { $0.selectionID == id }
-	}
-
-	func containsUnique(_ model: Element?) -> Bool {
-		guard let model else { return false }
-		return contains { $0.selectionID == model.selectionID }
-	}
-
-	@discardableResult
-	mutating func addUnique(_ model: Element) -> Bool {
-		guard !containsUnique(model) else { return false }
-		append(model)
-		return true
-	}
-
-	@discardableResult
-	mutating func removeUnique(_ model: Element) -> Bool {
-		guard let index = uniqueIndex(model) else { return false }
-		remove(at: index)
-		return true
-	}
-}
-
 public extension ModelContext {
-	func find<T: Selectable & PersistentModel>(selection id: UUID?) -> T? {
+	func find<T: Identifiable & PersistentModel>(selection id: T.ID?) -> T? {
 		guard let id else { return nil }
-		var fetching = FetchDescriptor<T>(
-			predicate: #Predicate { $0.selectionID == id }
-		)
-		fetching.fetchLimit = 1
-		return try? fetch(fetching).first!
+		var descriptor = FetchDescriptor<T>()
+		if let results = try? self.fetch(descriptor) {
+			return results.first { $0.id == id }
+		}
+		return nil
 	}
 }
 
-//TODO: use a key path to a thing that is equatable
 public extension Array where Element: Identifiable {
 	func nextIdentified(_ model: Element) -> Element? {
 		if let idx = self.identifiedIndex(model) {
