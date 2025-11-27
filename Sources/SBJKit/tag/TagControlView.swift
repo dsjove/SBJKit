@@ -1,11 +1,11 @@
 import SwiftUI
 
-public struct TagsControlView<T: Taggable>: View {
-	private let taggable: T
+public struct TagsControlView<T: TagUser>: View {
+	private let user: T
 	private let showTagsSheet: (()->())?
 
-	public init(taggable: T, showTagsSheet: (() -> Void)?) {
-		self.taggable = taggable
+	public init(user: T, showTagsSheet: (() -> Void)?) {
+		self.user = user
 		self.showTagsSheet = showTagsSheet
 	}
 
@@ -17,7 +17,7 @@ public struct TagsControlView<T: Taggable>: View {
 				}
 				.buttonStyle(.borderedProminent)
 			}
-			let sortedTags = taggable.sortedTags
+			let sortedTags = user.sortedTags
 			ScrollView(.horizontal, showsIndicators: false) {
 				HStack(spacing: 10) {
 					if sortedTags.isEmpty {
@@ -32,7 +32,7 @@ public struct TagsControlView<T: Taggable>: View {
 							}
 					} else {
 						ForEach(sortedTags) { item in
-							item.label(isPrimary: taggable.isTagPrimary(item))
+							item.label(isPrimary: user.isTagPrimary(item))
 						}
 					}
 				}

@@ -1,14 +1,14 @@
 import SwiftUI
 
-public struct TagsListView<T: Taggable>: View {
-	private let taggable: T
+public struct TagsListView<T: TagUser>: View {
+	private let user: T
 
-	public init(taggable: T) {
-		self.taggable = taggable
+	public init(user: T) {
+		self.user = user
 	}
 
 	public var body: some View {
-		let sortedTags = taggable.sortedTags
+		let sortedTags = user.sortedTags
 		HStack(spacing: 10) {
 			if sortedTags.isEmpty {
 				Text("No Tags")
@@ -17,7 +17,7 @@ public struct TagsListView<T: Taggable>: View {
 					.padding(.trailing)
 			} else {
 				ForEach(sortedTags) { item in
-					item.label(isPrimary: taggable.isTagPrimary(item))
+					item.label(isPrimary: user.isTagPrimary(item))
 				}
 			}
 		}

@@ -26,13 +26,6 @@ public extension Array where Element: Identifiable {
 		return self.last
 	}
 
-	func hasOtherIdentified(_ model: Element?) -> Bool {
-		guard !self.isEmpty else { return false }
-		guard !self.containsIdentified(model) else { return true }
-		guard self.count > 1 else { return false }
-		return true
-	}
-
 	func findIdentified(_ id: Element.ID?) -> Element? {
 		guard let id else { return nil }
 		return first { $0.id == id }

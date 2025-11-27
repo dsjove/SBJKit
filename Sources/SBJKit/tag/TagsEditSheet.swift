@@ -1,22 +1,24 @@
 import SwiftUI
 import SwiftData
 
-public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag {
+public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 	typealias Tag = T.Tag
 
 	@Environment(\.dismiss) private var dismiss
 
 	@Bindable var tagBag: B
-	let taggable: T?
+	let user: T?
 
 	@State private var searchText = ""
 	@State private var editColorTag: Tag?
 	@FocusState private var isTagFieldFocused: Tag.ID?
 	@State private var lastAddedTagID: Tag.ID?
+	@State private var pendingDeletion: [Tag] = []
+	@State private var showDeleteConfirmation = false
 
-	public init(tagBag: B, taggable: T?) {
+	public init(tagBag: B, user: T?) {
 		self.tagBag = tagBag
-		self.taggable = taggable
+		self.user = user
 	}
 
 	public var body: some View {
@@ -40,52 +42,66 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 										.onTapGesture {
 											editColorTag = tag
 										}
-									TextField("Name", text: Binding(
-										get: { tag.name },
-										set: { tag.name = $0 }
-									))
-									.focused($isTagFieldFocused, equals: tag.id)
-									.submitLabel(.done)
-									.onSubmit {
-										isTagFieldFocused = nil
+									VStack(alignment: .leading, spacing: 2) {
+										TextField("Name", text: Binding(
+											get: { tag.name },
+											set: { tag.name = $0 }
+										))
+										.focused($isTagFieldFocused, equals: tag.id)
+										.submitLabel(.done)
+										.onSubmit {
+											isTagFieldFocused = nil
+										}
+										.autocapitalization(.none)
+										.disableAutocorrection(true)
+										.overlay(
+											RoundedRectangle(cornerRadius: 6)
+												.stroke(Color.accentColor, lineWidth: isTagFieldFocused == tag.id ? 2 : 0)
+										)
+										.shadow(color: isTagFieldFocused == tag.id ? Color.accentColor.opacity(0.25) : .clear, radius: isTagFieldFocused == tag.id ? 5 : 0)
+
+										if tag.userCount > 0 {
+											Text("(\(tag.userCount))")
+												.font(.caption)
+												.foregroundStyle(.secondary)
+										}
 									}
-									.autocapitalization(.none)
-									.disableAutocorrection(true)
-									.overlay(
-										RoundedRectangle(cornerRadius: 6)
-											.stroke(Color.accentColor, lineWidth: isTagFieldFocused == tag.id ? 2 : 0)
-									)
-									.shadow(color: isTagFieldFocused == tag.id ? Color.accentColor.opacity(0.25) : .clear, radius: isTagFieldFocused == tag.id ? 5 : 0)
-									if let taggable {
+									if let user {
 										Toggle(isOn: Binding(
-											get: { taggable.hasTag(tag) },
+											get: { user.hasTag(tag) },
 											set: { newValue in
 												if newValue {
-													taggable.addTag(tag)
+													user.addTag(tag)
 												} else {
-													taggable.removeTag(tag)
+													user.removeTag(tag)
 												}
 											}
 										)) {}
 										.toggleStyle(.checkbox)
 										Button {
-											taggable.addTag(tag, makePrimary: true)
+											user.addTag(tag, makePrimary: true)
 										} label: {
-											Image(systemName: taggable.isTagPrimary(tag) ? "star.fill" : "star")
+											Image(systemName: user.isTagPrimary(tag) ? "star.fill" : "star")
 										}
 										.buttonStyle(.plain)
 									}
 								}
 								.background(
 									RoundedRectangle(cornerRadius: 12, style: .continuous)
-										.fill((taggable?.isTagPrimary(tag) ?? false) ? Color.secondary.opacity(0.13) : Color.clear)
+										.fill((user?.isTagPrimary(tag) ?? false) ? Color.secondary.opacity(0.13) : Color.clear)
 										.padding(-8)
 								)
 							}
 							.onDelete { offsets in
 								let toBeDeleted = offsets.map { sortedTags[$0] }
-								withAnimation {
-									tagBag.deleteTags(toBeDeleted)
+								let shouldPrompt = toBeDeleted.allSatisfy { !$0.isSoleUser(user) }
+								if shouldPrompt {
+									pendingDeletion = toBeDeleted
+									showDeleteConfirmation = true
+								} else {
+									withAnimation {
+										tagBag.deleteTags(toBeDeleted)
+									}
 								}
 							}
 						}
@@ -119,15 +135,36 @@ public struct TagsEditSheet<T: Taggable, B: TagBag> : View where T.Tag == B.Tag 
 				))
 				.presentationDetents([.medium])
 			}
+			.alert(
+				Text("Delete Tag" + (pendingDeletion.count > 1 ? "s" : "")),
+				isPresented: $showDeleteConfirmation
+			) {
+				Button("Cancel", role: .cancel) {
+					pendingDeletion.removeAll()
+				}
+				Button("Delete", role: .destructive) {
+					withAnimation {
+						tagBag.deleteTags(pendingDeletion)
+						pendingDeletion.removeAll()
+					}
+				}
+			} message: {
+				if pendingDeletion.count == 1, let name = pendingDeletion.first?.name {
+					Text("Are you sure you want to delete \"\(name)\"?")
+				} else {
+					Text("Are you sure you want to delete \(pendingDeletion.count) tags?")
+				}
+			}
 		}
 		.presentationDetents([.large])
 	}
 
 	func addTag() {
 		let newTag = tagBag.addNewTag(named: searchText)
-		taggable?.addTag(newTag)
+		user?.addTag(newTag)
 		searchText = ""
 		isTagFieldFocused = newTag.id
 		lastAddedTagID = newTag.id
 	}
 }
+

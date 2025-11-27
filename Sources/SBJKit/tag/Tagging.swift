@@ -16,13 +16,23 @@ public protocol Tagging:
 
 	var displayName: String { get }
 
-	associatedtype User: Taggable where User.Tag == Self
+	associatedtype User: TagUser where User.Tag == Self
 	var __users: [User]? { get set }
 }
 
 public extension Tagging {
-	var displayName: String {
-		name
+	var userCount: Int {
+		__users?.count ?? 0
+	}
+
+	func isSoleUser(_ user: User?) -> Bool {
+		if let __users, let user {
+			if __users.count == 1 {
+				return __users.first?.id == user.id
+			}
+			return __users.isEmpty == true
+		}
+		return true
 	}
 
 	func _userRemoved(_ user: User) {
@@ -31,6 +41,12 @@ public extension Tagging {
 
 	func _tearDownTagRelations() {
 		__users?.forEach { $0.removeTag(self) }
+	}
+}
+
+public extension Tagging {
+	var displayName: String {
+		name
 	}
 
 	static func < (lhs: Self, rhs: Self) -> Bool {
@@ -79,7 +95,7 @@ public extension Tagging {
 	}
 }
 
-public protocol Taggable: AnyObject, Identifiable {
+public protocol TagUser: AnyObject, Identifiable {
 	associatedtype Tag: Tagging where Tag.User == Self
 
 	func hasTag(_ tag: Tag) -> Bool
@@ -91,7 +107,11 @@ public protocol Taggable: AnyObject, Identifiable {
 	var __primaryTagID: Tag.ID? { get set }
 }
 
-public extension Taggable {
+public extension TagUser {
+	var tagCount: Int {
+		__tags?.count ?? 0
+	}
+
 	func isTagPrimary(_ tag: Tag) -> Bool {
 		tag.id == __primaryTagID
 	}
