@@ -146,8 +146,8 @@ fileprivate struct HelpWebView: UIViewRepresentable {
 				for match in matches {
 					guard match.numberOfRanges == 2, let range = Range(match.range(at: 1), in: html) else { continue }
 					let imageName = String(html[range])
-					let key = prefix + imageName
 					if let base64 = encodeImage(imageName, isAsset) {
+						let key = prefix + imageName + "\\"
 						results[key] = base64
 					}
 				}
