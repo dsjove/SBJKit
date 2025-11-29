@@ -9,6 +9,7 @@ struct CheckboxToggleStyle: ToggleStyle {
 			Spacer()
 			Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
 				.foregroundColor(configuration.isOn ? .accentColor : .secondary)
+				.imageScale(.large)
 				.onTapGesture {
 					configuration.isOn.toggle()
 				}

@@ -2,6 +2,9 @@ import Foundation
 import SwiftData
 
 public extension ModelContext {
+
+	//TODO: make smart about not fetching all at once
+	//Predicate struggles with '.id' not being concrete
 	func find<T: PersistentModel>(selection id: T.ID?) -> T? {
 		guard let id else { return nil }
 		var descriptor = FetchDescriptor<T>()

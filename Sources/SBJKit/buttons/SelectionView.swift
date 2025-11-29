@@ -16,6 +16,8 @@ public struct SelectionView<Element: Identifiable, Label: View>: View {
 	@State private var selected: Element?
 	@State private var searchText: String = ""
 
+	//TODO: add multiple selection
+
 	public init(
 		title: String? = nil,
 		noun: String,

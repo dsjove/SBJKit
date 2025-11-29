@@ -147,6 +147,14 @@ public extension TagUser {
 		}
 	}
 
+	func togglePrimary(_ tag: Tag) {
+		if self.isTagPrimary(tag) {
+			__primaryTagID = nil
+		} else {
+			addTag(tag, makePrimary: true)
+		}
+	}
+
 	func removeTag(_ tag: Tag) {
 		if __primaryTagID == tag.id {
 			__primaryTagID = nil

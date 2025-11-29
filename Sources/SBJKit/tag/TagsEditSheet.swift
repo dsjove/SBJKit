@@ -13,8 +13,12 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 	@State private var editColorTag: Tag?
 	@FocusState private var isTagFieldFocused: Tag.ID?
 	@State private var lastAddedTagID: Tag.ID?
-	@State private var pendingDeletion: [Tag] = []
-	@State private var showDeleteConfirmation = false
+
+	struct DeletionRequest: Identifiable {
+		let id = UUID()
+		let tags: [Tag]
+	}
+	@State private var deletionRequest: DeletionRequest?
 
 	public init(tagBag: B, user: T?) {
 		self.tagBag = tagBag
@@ -60,12 +64,13 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										)
 										.shadow(color: isTagFieldFocused == tag.id ? Color.accentColor.opacity(0.25) : .clear, radius: isTagFieldFocused == tag.id ? 5 : 0)
 
-										if tag.userCount > 0 {
+										if !tag.isSoleUser(user) {
 											Text("(\(tag.userCount))")
 												.font(.caption)
 												.foregroundStyle(.secondary)
 										}
 									}
+									//Implicit Spacer() with List rows
 									if let user {
 										Toggle(isOn: Binding(
 											get: { user.hasTag(tag) },
@@ -79,9 +84,10 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										)) {}
 										.toggleStyle(.checkbox)
 										Button {
-											user.addTag(tag, makePrimary: true)
+											user.togglePrimary(tag)
 										} label: {
 											Image(systemName: user.isTagPrimary(tag) ? "star.fill" : "star")
+											.imageScale(.large)
 										}
 										.buttonStyle(.plain)
 									}
@@ -96,8 +102,7 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 								let toBeDeleted = offsets.map { sortedTags[$0] }
 								let shouldPrompt = toBeDeleted.allSatisfy { !$0.isSoleUser(user) }
 								if shouldPrompt {
-									pendingDeletion = toBeDeleted
-									showDeleteConfirmation = true
+									deletionRequest = DeletionRequest(tags: toBeDeleted)
 								} else {
 									withAnimation {
 										tagBag.deleteTags(toBeDeleted)
@@ -135,25 +140,28 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 				))
 				.presentationDetents([.medium])
 			}
-			.alert(
-				Text("Delete Tag" + (pendingDeletion.count > 1 ? "s" : "")),
-				isPresented: $showDeleteConfirmation
-			) {
-				Button("Cancel", role: .cancel) {
-					pendingDeletion.removeAll()
-				}
-				Button("Delete", role: .destructive) {
-					withAnimation {
-						tagBag.deleteTags(pendingDeletion)
-						pendingDeletion.removeAll()
+			.alert(item: $deletionRequest) { request in
+				Alert(
+					title: Text("Delete Tag" + (request.tags.count > 1 ? "s" : "")),
+					message: {
+						if request.tags.count == 1, let name = request.tags.first?.name {
+							Text("Are you sure you want to delete \"\(name)\"?")
+						} else {
+							Text("Are you sure you want to delete \(request.tags.count) tags?")
+						}
+					}(),
+					primaryButton: .cancel(Text("Cancel")) {
+						deletionRequest = nil
+					},
+					secondaryButton: .destructive(Text("Delete")) {
+						withAnimation {
+							if let tags = deletionRequest?.tags {
+								tagBag.deleteTags(tags)
+							}
+							deletionRequest = nil
+						}
 					}
-				}
-			} message: {
-				if pendingDeletion.count == 1, let name = pendingDeletion.first?.name {
-					Text("Are you sure you want to delete \"\(name)\"?")
-				} else {
-					Text("Are you sure you want to delete \(pendingDeletion.count) tags?")
-				}
+				)
 			}
 		}
 		.presentationDetents([.large])
