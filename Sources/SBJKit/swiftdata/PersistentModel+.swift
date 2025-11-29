@@ -16,10 +16,12 @@ public extension Error {
 }
 
 public extension PersistentModel {
-	func deleteNow() {
+	func deleteNow(save: Bool = true) {
 		guard let mc = modelContext, !isDeleted else { return }
 		mc.delete(self)
-		saveNow()
+		if save {
+			saveNow()
+		}
 	}
 
 	@discardableResult

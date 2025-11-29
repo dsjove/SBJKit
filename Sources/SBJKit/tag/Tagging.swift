@@ -37,10 +37,13 @@ public extension Tagging {
 
 	func _userRemoved(_ user: User) {
 		__users?.removeIdentified(user)
+		//Let SwiftData manage the soon to be deleted user._tags
 	}
 
 	func _tearDownTagRelations() {
-		__users?.forEach { $0.removeTag(self) }
+		guard let users = __users else { return }
+		users.forEach { $0.removeTag(self) }
+		//Let SwiftData manage this tag's __user list
 	}
 }
 
@@ -149,6 +152,7 @@ public extension TagUser {
 			__primaryTagID = nil
 		}
 		__tags?.removeIdentified(tag)
+		//Let SwiftData update the tag's __users.
 	}
 }
 

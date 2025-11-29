@@ -59,11 +59,14 @@ where F: TagBagFactory, F.Tag: PersistentModel {
 	}
 
 	public func deleteTags(_ toBeDeleted: [Tag]) {
-		loadTagsIfNeeded()
 		for tag in toBeDeleted {
 			tags.removeIdentified(tag)
-			DispatchQueue.main.async {
-				tag.tearDown()
+			tag._tearDownTagRelations()
+		}
+
+		DispatchQueue.main.async {
+			for tag in toBeDeleted {
+				tag.deleteNow()
 			}
 		}
 	}
