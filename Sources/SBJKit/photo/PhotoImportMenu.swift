@@ -74,8 +74,8 @@ public struct _DefaultPhotoImportMenuLabel: View {
 	let isFilled: Bool
 	public var body: some View {
 		Image(systemName: isFilled ? "photo.fill" : "photo")
-			.buttonStyle(.bordered)
-			.controlSize(.large)
+			.controlSize(.regular)
+			.buttonStyle(.borderedProminent)
 			.accessibilityAddTraits(.isButton)
 	}
 }

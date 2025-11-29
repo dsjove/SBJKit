@@ -15,6 +15,7 @@ public struct TagsControlView<T: TagUser>: View {
 				ActionButton("Edit Tags", image: .system("tag.fill")) {
 					showTagsSheet()
 				}
+				.controlSize(.regular)
 				.buttonStyle(.borderedProminent)
 			}
 			let sortedTags = user.sortedTags
