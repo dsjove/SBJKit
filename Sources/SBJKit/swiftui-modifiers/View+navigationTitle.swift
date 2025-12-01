@@ -24,6 +24,7 @@ public extension View {
 public extension View {
 	func oneLiner() -> some View {
 		self
+			.focusedHighlight()
 			.textFieldStyle(.roundedBorder)
 			.multilineTextAlignment(.leading)
 			.lineLimit(1)

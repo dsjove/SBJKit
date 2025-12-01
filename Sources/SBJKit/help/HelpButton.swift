@@ -44,8 +44,8 @@ public struct HelpButton: View {
 
 	static let hasAbout: Bool = AssetPath(title: "About", folder: "help", mainBundle: true).stringValue() != nil
 
-	public init(title: String) {
-		self = .init(asset: .init(title: title, folder: "help"))
+	public init(title: String, auto: Bool = true) {
+		self = .init(asset: .init(title: title, folder: "help"), auto: auto)
 	}
 
 	public init(
