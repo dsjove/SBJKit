@@ -58,11 +58,7 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										}
 										.autocapitalization(.none)
 										.disableAutocorrection(true)
-										.overlay(
-											RoundedRectangle(cornerRadius: 6)
-												.stroke(Color.accentColor, lineWidth: isTagFieldFocused == tag.id ? 2 : 0)
-										)
-										.shadow(color: isTagFieldFocused == tag.id ? Color.accentColor.opacity(0.25) : .clear, radius: isTagFieldFocused == tag.id ? 5 : 0)
+										.focusedHighlight()
 
 										if !tag.isSoleUser(user) {
 											Text("(\(tag.userCount))")

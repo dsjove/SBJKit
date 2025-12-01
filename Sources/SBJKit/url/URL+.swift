@@ -8,6 +8,17 @@ import UIKit
 import AppKit
 #endif
 
+public extension ProcessInfo {
+	static var isRunningOnAnyMac: Bool {
+		#if os(macOS)
+		return true
+		#else
+		let info = ProcessInfo.processInfo
+		return info.isMacCatalystApp || info.isiOSAppOnMac
+		#endif
+	}
+}
+
 @MainActor
 public extension URL {
 	var isValidURL: Bool {

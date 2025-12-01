@@ -36,6 +36,20 @@ public extension RawRepresentable where Self.RawValue: DefaultsValue {
 	init?(defaults: RawValue) { self = .init(rawValue: defaults)! }
 }
 
+extension Schema.Version: DefaultsValue {
+	public var defaultsValue: String? { description }
+	public init?(defaults: String) {
+		let parts = defaults.split(separator: ".", omittingEmptySubsequences: false)
+		guard parts.count == 3,
+		      let major = Int(parts[0]),
+		      let minor = Int(parts[1]),
+		      let patch = Int(parts[2]) else {
+			return nil
+		}
+		self = .init(major, minor, patch)
+	}
+}
+
 extension Optional: DefaultsValue where Wrapped: DefaultsValue {
 	public var defaultsValue: Wrapped.RawValue? {
 		switch self {

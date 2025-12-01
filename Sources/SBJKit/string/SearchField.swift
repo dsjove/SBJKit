@@ -11,16 +11,14 @@ public struct SearchField<S: SearchProtocol>: View {
 
 	public var body: some View {
 		TextField(titleKey, text: $searching.text)
+			.oneLiner()
 			.autocapitalization(.none)
 			.disableAutocorrection(true)
-			.submitLabel(.done)
 			.padding(8)
-			.background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
 			.overlay(
 				RoundedRectangle(cornerRadius: 10)
-					.stroke(
-						searching.isEmpty ? Color(.separator) : Color.accentColor,
-						lineWidth: searching.isEmpty ? 1 : 2)
+					.stroke(style: StrokeStyle(lineWidth: searching.isEmpty ? 0 : 2, lineCap: .round, dash: [6, 3]))
+					.foregroundStyle(searching.isEmpty ? Color.clear : Color.blue)
 			)
 	}
 }

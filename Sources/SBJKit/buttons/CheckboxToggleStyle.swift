@@ -2,8 +2,8 @@ import SwiftUI
 
 #if !os(macOS)
 
-struct CheckboxToggleStyle: ToggleStyle {
-	func makeBody(configuration: Configuration) -> some View {
+public struct CheckboxToggleStyle: ToggleStyle {
+	public func makeBody(configuration: Configuration) -> some View {
 		HStack {
 			configuration.label
 			Spacer()
@@ -17,7 +17,7 @@ struct CheckboxToggleStyle: ToggleStyle {
 	}
 }
 
-extension ToggleStyle where Self == CheckboxToggleStyle {
+public extension ToggleStyle where Self == CheckboxToggleStyle {
 	static var checkbox: CheckboxToggleStyle { CheckboxToggleStyle() }
 }
 

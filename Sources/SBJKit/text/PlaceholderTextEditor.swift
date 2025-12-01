@@ -25,6 +25,7 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 			TextEditor(text: $text)
 				.frame(height: estimatedHeight)
 				.padding(.trailing, 32)
+				.focusedHighlight()
 				.overlay(
 					RoundedRectangle(cornerRadius: 8)
 						.stroke(Color.secondary.opacity(0.3), lineWidth: 1)
@@ -42,7 +43,6 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 					showSheet = true
 				} label: {
 					Image(systemName: "square.and.pencil")
-						.foregroundColor(.blue)
 				}
 				.padding(.trailing, 8)
 				.padding(.top, 8)
