@@ -2,6 +2,13 @@ import Foundation
 import SwiftUI
 
 public extension String {
+	public func isEquivelant(to other: String?) -> Bool {
+		guard let other else { return false }
+		let lhs = self.trimmed.lowercased()
+		let rhs = other.trimmed.lowercased()
+		return lhs == rhs
+	}
+
 	func replacingOccurrences(using replacements: [String: String]) -> String {
 		var result = self
 		for (key, value) in replacements {
