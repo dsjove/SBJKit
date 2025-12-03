@@ -47,6 +47,7 @@ public class PDFPager {
 			_ text: String,
 			font: UIFont,
 			xOffset: Double = 0,
+			maxWidth: Double? = nil,
 			lineSpacing: Double = 0) -> CGSize {
 		if text.isEmpty { return .zero }
 		let attr: [NSAttributedString.Key: Any] = [
@@ -56,15 +57,16 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		var size = measure(str)
+		var size = measure(str, maxWidth: maxWidth, xOffset: xOffset)
 		size.height += lineSpacing
 		return size
 	}
 
 	private func measure(
 			_ str: NSAttributedString,
-			xOffset: Double = 0) -> CGSize {
-		let width = contentWidth - xOffset
+			maxWidth: Double?,
+			xOffset: Double) -> CGSize {
+		let width = (maxWidth ?? contentWidth) - xOffset
 		let rect = str.boundingRect(with: CGSize(width: width, height: Double.greatestFiniteMagnitude), options: .usesLineFragmentOrigin, context: nil)
 		return rect.size
 	}
@@ -75,7 +77,9 @@ public class PDFPager {
 			font: UIFont,
 			alignment: NSTextAlignment = .left,
 			xOffset: Double = 0,
+			maxWidth: Double? = nil,
 			lineSpacing: Double = 0,
+			url: URL? = nil,
 			cursor: Double? = nil) -> Double {
 		if text.isEmpty { return .zero }
 		let attr: [NSAttributedString.Key: Any] = [
@@ -86,7 +90,7 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		var size = measure(str, xOffset: xOffset)
+		var size = measure(str, maxWidth: maxWidth, xOffset: xOffset)
 
 		let pos: Double
 		if let cursor {
@@ -97,15 +101,20 @@ public class PDFPager {
 		}
 
 		let x: Double
+		let width = (maxWidth ?? contentWidth) - xOffset
 		switch alignment {
 		case .center:
-			x = margin + xOffset + (contentWidth - size.width) / 2
+			x = margin + xOffset + (width - size.width) / 2
 		case .right:
-			x = margin + (contentWidth -  size.width - xOffset)
+			x = margin + (width -  size.width - xOffset)
 		default: // left
 			x = margin + xOffset
 		}
-		str.draw(with: CGRect(x: x, y: pos, width: size.width, height: size.height), options: .usesLineFragmentOrigin, context: nil)
+		let drawRect = CGRect(x: x, y: pos, width: size.width, height: size.height)
+		str.draw(with: drawRect, options: .usesLineFragmentOrigin, context: nil)
+		if let url {
+			ctx?.cgContext.setURL(url as CFURL, for: drawRect)
+		}
 		let consumed = size.height + lineSpacing
 		if cursor == nil {
 			consume(consumed)
@@ -140,7 +149,8 @@ public class PDFPager {
 		default: // left
 			x = margin + xOffset
 		}
-		img.draw(in: CGRect(x: x, y: pos, width: size.width, height: size.height))
+		let drawRect = CGRect(x: x, y: pos, width: size.width, height: size.height)
+		img.draw(in: drawRect)
 		let consumed = size.height + lineSpacing
 		if cursor == nil {
 			consume(consumed)
@@ -162,9 +172,5 @@ public class PDFPager {
 
 	public func consume(_ delta: Double) {
 		y += delta
-	}
-
-	public func max(_ lastDrawnY: Double) {
-		y = Swift.max(y, lastDrawnY)
 	}
 }
