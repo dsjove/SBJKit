@@ -16,11 +16,20 @@ public struct FlowLayout<L: Layoutable> {
 	let elementSpacing: Double
 	let lineSpacing: Double
 	let lineCountLimit: Int
+	let rowElementLimit: Int
 
-	public init(elementSpacing: Double = 3, lineSpacing: Double = 3, lineCountLimit: Int = .max) {
+	public init(elementSpacing: Double = 3, lineSpacing: Double = 3, lineCountLimit: Int = .max, rowElementLimit: Int = .max) {
 		self.elementSpacing = elementSpacing
 		self.lineSpacing = lineSpacing
 		self.lineCountLimit = lineCountLimit
+		self.rowElementLimit = rowElementLimit
+	}
+
+	public func intrinsicSize(
+		of elements: [L],
+		maxWidth: Double
+	) -> CGSize {
+		intrinsicSize(of: elements, maxSize: CGSize(width: maxWidth, height: Double.greatestFiniteMagnitude))
 	}
 
 	public func intrinsicSize(
@@ -46,8 +55,7 @@ public struct FlowLayout<L: Layoutable> {
 
 		func commitLine() {
 			guard itemCount > 0 else { return }
-			totalWidth = max(totalWidth,
-							 contentWidth + Double(max(0, itemCount - 1)) * elementSpacing)
+			totalWidth = max(totalWidth, contentWidth + Double(max(0, itemCount - 1)) * elementSpacing)
 			totalHeight = lineTop + lineHeight
 			hasAnyLine = true
 			lineCount += 1
@@ -68,8 +76,8 @@ public struct FlowLayout<L: Layoutable> {
 
 		for element in elements {
 			let size = element.intrinsicSize(maxSize: maxSize)
-			let w = Double(size.width)
-			let h = Double(size.height)
+			let w = size.width
+			let h = size.height
 		// Starting a new line if current line is empty
 			if itemCount == 0 {
 				if !startNewLine(width: w, height: h) { break }
@@ -86,6 +94,13 @@ public struct FlowLayout<L: Layoutable> {
 				contentWidth += (itemCount > 0 ? elementSpacing : 0) + w
 				lineHeight = newHeight
 				itemCount += 1
+
+				// Force wrap if row element limit reached
+				if itemCount >= rowElementLimit {
+					commitLine()
+					// Reset to allow new line on next iteration
+					itemCount = 0
+				}
 			}
 			else {
 		// Wrap to next line
@@ -110,11 +125,11 @@ public struct FlowLayout<L: Layoutable> {
 	) {
 		guard !elements.isEmpty else { return }
 
-		let maxWidth = Double(rect.width)
-		let heightLimit = Double(rect.height)
+		let maxWidth = rect.width
+		let heightLimit = rect.height
 
-		let originX = Double(rect.minX)
-		let originY = Double(rect.minY)
+		let originX = rect.minX
+		let originY = rect.minY
 
 		var totalHeight: Double = 0
 		var hasAnyLine = false
@@ -163,8 +178,8 @@ public struct FlowLayout<L: Layoutable> {
 
 		for element in elements {
 			let size = element.intrinsicSize(maxSize: maxSize)
-			let w = Double(size.width)
-			let h = Double(size.height)
+			let w = size.width
+			let h = size.height
 
 			if itemCount == 0 {
 				if !startNewLine(width: w, height: h, element: element) { break }
@@ -191,6 +206,13 @@ public struct FlowLayout<L: Layoutable> {
 				contentWidth += (itemCount > 0 ? elementSpacing : 0) + w
 				lineHeight = newHeight
 				itemCount += 1
+
+				// Force wrap if row element limit reached
+				if itemCount >= rowElementLimit {
+					commitLine()
+					// Reset to allow new line on next iteration
+					itemCount = 0
+				}
 			} else {
 				commitLine()
 				if !startNewLine(width: w, height: h, element: element) { break }

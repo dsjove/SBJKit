@@ -44,21 +44,11 @@ public class PDFPager {
 	}
 
 	public func measure(
-			_ str: NSAttributedString,
-			width: Double? = nil,
-			offset: Double = 0) -> CGSize {
-		let width = (width ?? contentWidth) - offset
-		let rect = str.boundingRect(with: CGSize(width: width, height: 1000), options: .usesLineFragmentOrigin, context: nil)
-		return rect.size
-	}
-
-	public func measure(
 			_ text: String,
 			font: UIFont,
-			width: Double? = nil,
-			offset: Double = 0) -> CGSize {
+			xOffset: Double = 0,
+			lineSpacing: Double = 0) -> CGSize {
 		if text.isEmpty { return .zero }
-		let width = (width ?? contentWidth) - offset
 		let attr: [NSAttributedString.Key: Any] = [
 			.font: font
 		]
@@ -66,7 +56,17 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		return measure(str, width: width)
+		var size = measure(str)
+		size.height += lineSpacing
+		return size
+	}
+
+	private func measure(
+			_ str: NSAttributedString,
+			xOffset: Double = 0) -> CGSize {
+		let width = contentWidth - xOffset
+		let rect = str.boundingRect(with: CGSize(width: width, height: Double.greatestFiniteMagnitude), options: .usesLineFragmentOrigin, context: nil)
+		return rect.size
 	}
 
 	@discardableResult
@@ -74,10 +74,9 @@ public class PDFPager {
 			_ text: String,
 			font: UIFont,
 			alignment: NSTextAlignment = .left,
-			width: Double? = nil,
-			offset: Double = 0,
-			cursor: Double? = nil,
-			spacing: Double = 0) -> Double {
+			xOffset: Double = 0,
+			lineSpacing: Double = 0,
+			cursor: Double? = nil) -> Double {
 		if text.isEmpty { return .zero }
 		let attr: [NSAttributedString.Key: Any] = [
 			.font: font
@@ -87,7 +86,7 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		let size = measure(str, width: width)
+		var size = measure(str, xOffset: xOffset)
 
 		let pos: Double
 		if let cursor {
@@ -97,31 +96,33 @@ public class PDFPager {
 			pos = y
 		}
 
-		let w = width ?? contentWidth
 		let x: Double
 		switch alignment {
 		case .center:
-			x = margin + offset + (contentWidth - w) / 2
+			x = margin + xOffset + (contentWidth - size.width) / 2
 		case .right:
-			x = margin + (contentWidth - w - offset)
+			x = margin + (contentWidth -  size.width - xOffset)
 		default: // left
-			x = margin + offset
+			x = margin + xOffset
 		}
-		str.draw(with: CGRect(x: x, y: pos, width: w, height: size.height), options: .usesLineFragmentOrigin, context: nil)
-		let consumed = size.height + spacing
+		str.draw(with: CGRect(x: x, y: pos, width: size.width, height: size.height), options: .usesLineFragmentOrigin, context: nil)
+		let consumed = size.height + lineSpacing
 		if cursor == nil {
 			consume(consumed)
 		}
-		return size.height + spacing
+		return consumed
 	}
 
+	@discardableResult
 	public func draw(
-			_ img: UIImage,
+			_ img: UIImage?,
 			size: CGSize,
-			offset: Double = 0,
-			cursor: Double? = nil,
 			alignment: NSTextAlignment = .left,
-			spacing: Double = 0) {
+			xOffset: Double = 0,
+			lineSpacing: Double = 0,
+			cursor: Double? = nil) -> Double {
+		guard let img, size != .zero else { return .zero }
+
 		let pos: Double
 		if let cursor {
 			pos = cursor
@@ -133,16 +134,18 @@ public class PDFPager {
 		let x: Double
 		switch alignment {
 		case .center:
-			x = margin + offset + (contentWidth - size.width) / 2
+			x = margin + xOffset + (contentWidth - size.width) / 2
 		case .right:
-			x = margin + (contentWidth - size.width - offset)
+			x = margin + (contentWidth - size.width - xOffset)
 		default: // left
-			x = margin + offset
+			x = margin + xOffset
 		}
 		img.draw(in: CGRect(x: x, y: pos, width: size.width, height: size.height))
+		let consumed = size.height + lineSpacing
 		if cursor == nil {
-			consume(size.height + spacing)
+			consume(consumed)
 		}
+		return consumed
 	}
 
 	@discardableResult
