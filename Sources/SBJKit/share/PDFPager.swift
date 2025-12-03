@@ -11,7 +11,7 @@ public class PDFPager {
 
 	public private(set) var ctx: UIGraphicsPDFRendererContext?
 	public private(set) var page: Int = 0
-	public private(set) var _header: (()->())? = nil
+	public private(set) var _header: ((CGContext)->())? = nil
 	public private(set) var y: Double
 
 	public init(_ name: String, _ bundle: String) {
@@ -28,19 +28,19 @@ public class PDFPager {
 		self.renderer = UIGraphicsPDFRenderer(bounds: bounds, format: format)
 	}
 
-	public func writePDF(to url: URL, header: (()->())?  = nil, content: () -> Void) {
+	public func writePDF(to url: URL, header: ((CGContext)->())?  = nil, content: (CGContext) -> Void) {
 		try? renderer.writePDF(to: url) { ctx in
 			self.begin(ctx, header)
-			content()
+			content(ctx.cgContext)
 		}
 	}
 
-	public func begin(_ ctx: UIGraphicsPDFRendererContext, _ header: (()->())?  = nil) {
+	public func begin(_ ctx: UIGraphicsPDFRendererContext, _ header: ((CGContext)->())?  = nil) {
 		self.ctx = ctx
 		_header = header
 		ctx.beginPage()
 		page = 1
-		_header?()
+		_header?(ctx.cgContext)
 	}
 
 	public func measure(
@@ -57,12 +57,12 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		var size = measure(str, maxWidth: maxWidth, xOffset: xOffset)
+		var size = intrinsicSize(str, maxWidth: maxWidth, xOffset: xOffset)
 		size.height += lineSpacing
 		return size
 	}
 
-	private func measure(
+	private func intrinsicSize(
 			_ str: NSAttributedString,
 			maxWidth: Double?,
 			xOffset: Double) -> CGSize {
@@ -90,7 +90,7 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		var size = measure(str, maxWidth: maxWidth, xOffset: xOffset)
+		var size = intrinsicSize(str, maxWidth: maxWidth, xOffset: xOffset)
 
 		let pos: Double
 		if let cursor {
@@ -164,7 +164,9 @@ public class PDFPager {
 			ctx!.beginPage()
 			y = margin
 			page += 1
-			_header?()
+			if let header = _header, let ctx = ctx?.cgContext {
+				header(ctx)
+			}
 			return true
 		}
 		return false
