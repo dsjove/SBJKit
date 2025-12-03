@@ -57,6 +57,7 @@ public class PDFPager {
 			font: UIFont,
 			width: Double? = nil,
 			offset: Double = 0) -> CGSize {
+		if text.isEmpty { return .zero }
 		let width = (width ?? contentWidth) - offset
 		let attr: [NSAttributedString.Key: Any] = [
 			.font: font
@@ -77,6 +78,7 @@ public class PDFPager {
 			offset: Double = 0,
 			cursor: Double? = nil,
 			spacing: Double = 0) -> Double {
+		if text.isEmpty { return .zero }
 		let attr: [NSAttributedString.Key: Any] = [
 			.font: font
 		]
