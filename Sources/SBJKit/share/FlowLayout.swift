@@ -1,6 +1,97 @@
 import UIKit
-
 import CoreGraphics
+
+public extension CGSize {
+	static var greatestFiniteMagnitude: CGSize { CGSize(
+		width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude)}
+}
+
+public struct LayoutAlign: OptionSet, Sendable {
+	public let rawValue: Int
+
+	public static let top             = LayoutAlign(rawValue: 1 << 0)
+	public static let bottom          = LayoutAlign(rawValue: 1 << 1)
+	public static let leading         = LayoutAlign(rawValue: 1 << 2)
+	public static let trailing        = LayoutAlign(rawValue: 1 << 3)
+
+	public static let centerVertical: LayoutAlign   = [.top, .bottom]
+	public static let centerHorizontal: LayoutAlign =  [.leading, .trailing]
+
+	public init(rawValue: Int) {
+		self.rawValue = rawValue
+	}
+
+	public func transform(size: CGSize, in rect: CGRect) -> CGRect {
+		var x = rect.origin.x
+		var y = rect.origin.y
+		if contains(.leading) && !contains(.trailing) {
+			x = rect.minX
+		} else if contains(.trailing) && !contains(.leading) {
+			x = rect.maxX - size.width
+		} else {
+			x = rect.minX + (rect.width - size.width) / 2
+		}
+		if contains(.top) && !contains(.bottom) {
+			y = rect.minY
+		} else if contains(.bottom) && !contains(.top) {
+			y = rect.maxY - size.height
+		} else {
+			y = rect.minY + (rect.height - size.height) / 2
+		}
+		return CGRect(origin: CGPoint(x: x, y: y), size: size)
+	}
+}
+
+public struct PlannedLayoutElement {
+	public let element: LayoutElement
+	public let alignment: LayoutAlign
+	public let bounds: CGSize
+	public let instrinsicSize: CGSize
+
+	init(_ element: LayoutElement, _ alignment: LayoutAlign, bounds: CGSize = .greatestFiniteMagnitude) {
+		self.element = element
+		self.alignment = alignment
+		self.bounds = bounds
+		self.instrinsicSize = element.intrinsicSize(bounds)
+	}
+
+	func drawRect(framingRect: CGRect) -> CGRect {
+		alignment.transform(size: instrinsicSize, in: framingRect)
+	}
+
+	public func draw(framingRect: CGRect) {
+		element.draw(drawRect(framingRect: framingRect))
+	}
+}
+
+public class PageLayout {
+	public let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+	public let margin: Double = 36
+	public var contentRect: CGRect { .init(
+		x: margin, y: margin,
+		width: bounds.width - 2 * margin, height: bounds.height - 2 * margin)
+	}
+	public var span: CGSize {
+		.init(width: self.cursor.x - contentRect.width, height: self.cursor.y - contentRect.height)
+	}
+	public var space: CGRect { .init(origin: self.cursor, size: span ) }
+
+	public private(set) var page: Int = 1
+	public private(set) var cursor: CGPoint = .zero
+
+	init() {
+		self.cursor = contentRect.origin
+	}
+
+	public func newPageIfNeeded(_ delta: Double) -> Bool {
+		if (cursor.y + delta) > contentRect.maxY {
+			self.cursor.y = margin
+			page += 1
+			return true
+		}
+		return false
+	}
+}
 
 public struct LayoutElement {
 	public let intrinsicSize: (_ maxSize: CGSize)->CGSize
@@ -12,31 +103,60 @@ public struct LayoutElement {
 	}
 }
 
+public struct StringLayout {
+	let string: NSAttributedString?
+	let url: URL?
+
+	init(string: String?, font: UIFont?, url: URL?) {
+		self.url = url
+		if let string = string ?? url?.absoluteString, !string.isEmpty {
+			let attr: [NSAttributedString.Key: Any] = font == nil ? [:] : [
+				.font: font
+			]
+			let paragraphStyle = NSMutableParagraphStyle()
+			var attributesWithPara = attr
+			attributesWithPara[.paragraphStyle] = paragraphStyle
+			self.string = NSAttributedString(string: string, attributes: attributesWithPara)
+		}
+		else {
+			self.string = nil
+		}
+	}
+
+	func intrinsicSize(maxSize: CGSize) -> CGSize {
+		string?.boundingRect(with: maxSize, options: .usesLineFragmentOrigin, context: nil).size ?? .zero
+	}
+
+	func draw(in rect: CGRect) {
+		string?.draw(with: rect, options: .usesLineFragmentOrigin, context: nil)
+	}
+}
+
 public struct FlowLayout {
+	public let elements: [LayoutElement]
 	public let elementSpacing: Double
 	public let lineSpacing: Double
 	public let lineCountLimit: Int
 	public let rowElementLimit: Int
 
-	public init(elementSpacing: Double = 3, lineSpacing: Double = 3, lineCountLimit: Int = .max, rowElementLimit: Int = .max) {
+	public init(_ elements: [LayoutElement], elementSpacing: Double = 3, lineSpacing: Double = 3, lineCountLimit: Int = .max, rowElementLimit: Int = .max) {
+		self.elements = elements
 		self.elementSpacing = elementSpacing
 		self.lineSpacing = lineSpacing
 		self.lineCountLimit = lineCountLimit
 		self.rowElementLimit = rowElementLimit
 	}
 
-	public func intrinsicSize(
-		of elements: [LayoutElement],
-		maxWidth: Double
-	) -> CGSize {
-		intrinsicSize(of: elements, maxSize: CGSize(width: maxWidth, height: Double.greatestFiniteMagnitude))
+	var layout: LayoutElement {
+		.init(intrinsicSize, {draw(in: $0)})
 	}
 
-	public func intrinsicSize(
-		of elements: [LayoutElement],
-		maxSize: CGSize = CGSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude)
-	) -> CGSize {
+	public func intrinsicSize(maxWidth: Double) -> CGSize {
+		intrinsicSize(maxSize: CGSize(width: maxWidth, height: Double.greatestFiniteMagnitude))
+	}
 
+	public func intrinsicSize(maxSize: CGSize = CGSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude)
+	) -> CGSize {
 		guard !elements.isEmpty else { return .zero }
 
 		let maxWidth = Double(maxSize.width)
@@ -118,7 +238,6 @@ public struct FlowLayout {
 	}
 
 	public func draw(
-		_ elements: [LayoutElement],
 		in rect: CGRect,
 		maxSize: CGSize = CGSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude)) -> Void {
 		guard !elements.isEmpty else { return }

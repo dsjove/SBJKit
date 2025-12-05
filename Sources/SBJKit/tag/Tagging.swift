@@ -137,10 +137,13 @@ public extension TagUser {
 	}
 
 	var sortedTags: [Tag] {
-		return __tags?.sorted() ?? []
+		__tags?.sorted() ?? []
 	}
 
 	func addTag(_ tag: Tag, makePrimary: Bool = false) {
+		if __tags == nil {
+			__tags = []
+		}
 		__tags?.addIdentified(tag)
 		if makePrimary || __primaryTagID == nil {
 			__primaryTagID = tag.id
