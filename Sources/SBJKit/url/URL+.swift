@@ -8,6 +8,8 @@ import UIKit
 import AppKit
 #endif
 
+public typealias IdentifiedURL = Identified<URL>
+
 public extension ProcessInfo {
 	static var isRunningOnAnyMac: Bool {
 		#if os(macOS)

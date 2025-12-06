@@ -122,14 +122,14 @@ public struct PhotoImportMenu<Content: View>: View {
 		Menu {
 			if options.contains(.view), let image {
 				Button() {
-					state.viewingImage = IdentifiableImage(image: image)
+					state.viewingImage = IdentifiableImage(image)
 				} label: {
 					Label("View", systemImage: "eye")
 				}
 			}
 			if options.contains(.share), let image {
 				Button() {
-					state.shareImage = IdentifiableImage(image: image)
+					state.shareImage = IdentifiableImage(image)
 				} label: {
 					Label("Share", systemImage: "square.and.arrow.up")
 				}
@@ -182,12 +182,12 @@ public struct PhotoImportMenu<Content: View>: View {
 		} label: {
 			label()
 				.fullScreenCover(item: $state.viewingImage) { identifiable in
-					PhotoEditSheet(viewing: identifiable.image) {
+					PhotoEditSheet(viewing: identifiable.value) {
 						state.viewingImage = nil
 					}
 				}
 				.sheet(item: $state.shareImage) { identifiable in
-					ShareSheet(activityItems: [identifiable.image], applicationActivities: nil)
+					ShareSheet(activityItems: [identifiable.value], applicationActivities: nil)
 				}
 				.sheet(isPresented: $state.isPickerPresented) {
 					PhotoPickerView(image: $state.importedImage)
@@ -227,7 +227,7 @@ public struct PhotoImportMenu<Content: View>: View {
 					if let newValue {
 						if editImports {
 							DispatchQueue.main.async {
-								state.editingImage = IdentifiableImage(image: newValue)
+								state.editingImage = IdentifiableImage(newValue)
 							}
 						}
 						else {
@@ -236,7 +236,7 @@ public struct PhotoImportMenu<Content: View>: View {
 					} // else canceled
 				}
 				.fullScreenCover(item: $state.editingImage) { identifiable in
-					PhotoEditSheet(image: identifiable.image) { result in
+					PhotoEditSheet(image: identifiable.value) { result in
 						if let result {
 							image = result
 						} // else canceled

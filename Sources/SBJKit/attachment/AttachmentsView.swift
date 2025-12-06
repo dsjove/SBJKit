@@ -4,15 +4,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 import SBJKit
 
-public struct IdentifiedURL: Identifiable {
-	public let id: UUID = UUID()
-	public let url: URL
-
-	public init(_ url: URL) {
-		self.url = url
-	}
-}
-
 public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.openURL) private var openURL
@@ -38,11 +29,9 @@ public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 					HStack {
 						TextField("Name", text: Binding(
 							get: { attachment.name },
-							set: { newValue in
-								var mutable = attachment
-								mutable.name = newValue
-							}
+							set: { attachment.name = $0 }
 						))
+						.oneLiner()
 						Spacer()
 						Button {
 							openAttachment(attachment)
@@ -72,7 +61,7 @@ public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 			.fileImporter(
 				isPresented: $isImporterPresented,
 				allowedContentTypes: [.item],
-				allowsMultipleSelection: false
+				allowsMultipleSelection: true
 			) { result in
 				handleImportResult(result)
 			}
@@ -81,8 +70,8 @@ public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 			} message: {
 				Text(importerError ?? "")
 			}
-			.sheet(item: $previewURL) {
-				DocumentPreviewController(url: $0.url)
+			.fullScreenCover(item: $previewURL) { item in
+				DocumentPreviewSheet(url: item.value, title: item.value.lastPathComponent)
 			}
 		}
 	}
@@ -92,27 +81,24 @@ public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 	private func handleImportResult(_ result: Result<[URL], Error>) {
 		switch result {
 		case .success(let urls):
-			guard let url = urls.first else { return }
-
-			let accessing = url.startAccessingSecurityScopedResource()
-			defer {
-				if accessing {
-					url.stopAccessingSecurityScopedResource()
+			for url in urls {
+				let accessing = url.startAccessingSecurityScopedResource()
+				defer {
+					if accessing {
+						url.stopAccessingSecurityScopedResource()
+					}
+				}
+				// Optional: sanity check – useful while debugging
+				if !FileManager.default.fileExists(atPath: url.path) {
+					print("DEBUG: File does not exist at path: \(url.path)")
+				}
+				do {
+					let _ = try owner.addAttachment(url: url)
+				} catch {
+					importerError = error.localizedDescription
+					print("DEBUG: bookmarkData error:", error)
 				}
 			}
-
-			// Optional: sanity check – useful while debugging
-			if !FileManager.default.fileExists(atPath: url.path) {
-				print("DEBUG: File does not exist at path: \(url.path)")
-			}
-
-			do {
-				let _ = try owner.addAttachment(url: url)
-			} catch {
-				importerError = error.localizedDescription
-				print("DEBUG: bookmarkData error:", error)
-			}
-
 		case .failure(let error):
 			importerError = error.localizedDescription
 			print("DEBUG: fileImporter error:", error)

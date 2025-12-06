@@ -1,15 +1,7 @@
 import UIKit
 import Foundation
 
-//TODO: make into generic struct
-public struct IdentifiableImage: Identifiable {
-	public let id = UUID()
-	public let image: UIImage
-
-	public init(image: UIImage) {
-		self.image = image
-	}
-}
+public typealias IdentifiableImage = Identified<UIImage>
 
 public extension UIImage {
 	convenience init?(data: Data?) {

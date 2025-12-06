@@ -1,8 +1,6 @@
-import SwiftData
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
-import SBJKit
 
 public protocol Attaching:
 	AnyObject,
@@ -12,6 +10,7 @@ public protocol Attaching:
 	CustomDebugStringConvertible,
 	Comparable where ID: Comparable {
 
+	var timestamp: Date { get }
 	var name: String { get set }
 	var bookmark: Data { get set }
 	var displayName: String { get }
@@ -23,7 +22,6 @@ public extension Attaching {
 	var displayName: String { name }
 
 	init(url: URL) throws {
-		// iOS requires **NO security scope options**
 		let bookmark = try url.bookmarkData(
 			options: [],
 			includingResourceValuesForKeys: nil,
@@ -57,6 +55,9 @@ public extension Attaching {
 		if nameCompare != .orderedSame {
 			return nameCompare == .orderedAscending
 		}
+		if lhs.timestamp != rhs.timestamp {
+			return lhs.timestamp < rhs.timestamp
+		}
 		return lhs.id < rhs.id
 	}
 
@@ -77,7 +78,7 @@ public protocol AttachmentOwner: AnyObject {
 }
 
 public extension AttachmentOwner {
-	var AttachmentCount: Int {
+	var attachmentCount: Int {
 		__attachments?.count ?? 0
 	}
 
