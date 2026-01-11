@@ -1,8 +1,13 @@
 import SwiftUI
 
 public struct ShareSheet: UIViewControllerRepresentable {
-	public var activityItems: [Any]
-	public var applicationActivities: [UIActivity]? = nil
+	let activityItems: [Any]
+	let applicationActivities: [UIActivity]?
+
+	public init(activityItems: [Any], applicationActivities: [UIActivity]? = nil) {
+		self.activityItems = activityItems
+		self.applicationActivities = applicationActivities
+	}
 
 	public static func item(content: String, name: String? = nil, ext: String? = nil) -> Any {
 		if let name {
