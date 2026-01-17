@@ -21,15 +21,6 @@ public extension String {
 		let font = UIFont.preferredFont(forTextStyle: style)
 		return self.size(withAttributes: [.font: font]).width
 	}
-
-	func sanitizeFileName(removeSpaces: Bool = false) -> String {
-		let invalidCharacters = CharacterSet(charactersIn: "/\\?%*|\"<>:").union(.newlines).union(.illegalCharacters)
-		var sanitized = self.components(separatedBy: invalidCharacters).joined(separator: "-")
-		if removeSpaces {
-			sanitized = sanitized.replacingOccurrences(of: " ", with: "")
-		}
-		return sanitized
-	}
 }
 
 public extension Collection where Element: Hashable {
