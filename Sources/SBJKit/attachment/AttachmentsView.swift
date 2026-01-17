@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftData
 import Foundation
 import SwiftUI
@@ -136,3 +137,4 @@ public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 		}
 	}
 }
+#endif

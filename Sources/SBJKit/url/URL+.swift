@@ -25,7 +25,7 @@ public extension ProcessInfo {
 public extension URL {
 	var isValidURL: Bool {
 		guard !self.absoluteString.isEmpty else { return false }
-		#if !WIDGET_TARGET
+		#if !WIDGET_TARGET && !os(watchOS)
 		return UIApplication.shared.canOpenURL(self)
 		#else
 		return true

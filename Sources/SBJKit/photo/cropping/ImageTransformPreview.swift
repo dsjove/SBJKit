@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 
 public struct ImageTransformPreview: View {
@@ -40,3 +41,4 @@ public struct ImageTransformPreview: View {
 		}
 	}
 }
+#endif

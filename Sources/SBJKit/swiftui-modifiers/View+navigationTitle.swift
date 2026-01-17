@@ -25,7 +25,9 @@ public extension View {
 	func oneLiner() -> some View {
 		self
 			.focusedHighlight()
+			#if !os(watchOS)
 			.textFieldStyle(.roundedBorder)
+			#endif
 			.multilineTextAlignment(.leading)
 			.lineLimit(1)
 			.submitLabel(.done)

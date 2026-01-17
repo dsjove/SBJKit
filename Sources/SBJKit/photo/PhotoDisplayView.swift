@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import UIKit
 import SwiftData
@@ -35,3 +36,4 @@ public struct PhotoDisplayView<Source: PhotoSource>: View {
 		}
 	}
 }
+#endif

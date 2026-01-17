@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import UIKit
 import PencilKit
@@ -39,3 +40,4 @@ public struct PencilCanvasOverlay: UIViewRepresentable {
 		}
 	}
 }
+#endif

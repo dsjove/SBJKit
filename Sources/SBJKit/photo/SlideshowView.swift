@@ -103,7 +103,9 @@ public struct SlideshowView<Content: SlideView>: View {
 				}
 			}
 		}
+		#if !os(watchOS)
 		.statusBarHidden(true)
+		#endif
 	}
 }
 

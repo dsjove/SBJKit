@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 
 public struct PhotoEditSheet: View {
@@ -164,3 +165,4 @@ public struct PhotoEditSheet: View {
 		return markup.render(on: cropped, in: transform.crop.size)
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import UIKit
 
@@ -246,4 +247,4 @@ public class PDFPager {
 		}
 	}
 }
-
+#endif

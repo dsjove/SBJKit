@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import UIKit
 import WebKit
@@ -216,3 +217,4 @@ fileprivate struct HelpWebView: UIViewRepresentable {
 		}
 	}
 }
+#endif

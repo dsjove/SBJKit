@@ -56,7 +56,9 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										.onSubmit {
 											isTagFieldFocused = nil
 										}
+	#if !os(watchOS)
 										.autocapitalization(.none)
+	#endif
 										.disableAutocorrection(true)
 										.focusedHighlight()
 
@@ -117,7 +119,9 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 					}
 				}
 			}
+	#if !os(watchOS)
 			.navigationBarTitle(tagBag.title, displayMode: .inline)
+	#endif
 			.toolbar {
 				ToolbarItemGroup(placement: .topBarLeading) {
 					DismissButton {
@@ -126,9 +130,12 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 				}
 				ToolbarItemGroup(placement: .topBarTrailing) {
 					AddButton("Tag", add: addTag)
+	#if !os(watchOS)
 					HelpButton(asset: .init(title: "Edit Tags", folder: "help", mainBundle: false))
+	#endif
 				}
 			}
+	#if !os(watchOS)
 			.sheet(item: $editColorTag) { tag in
 				ColorPickerView(title: tag.name, selectedColor: Binding(
 					get: { tag.color.swiftUIColor },
@@ -136,6 +143,7 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 				))
 				.presentationDetents([.medium])
 			}
+	#endif
 			.alert(item: $deletionRequest) { request in
 				Alert(
 					title: Text("Delete Tag" + (request.tags.count > 1 ? "s" : "")),
@@ -171,4 +179,3 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 		lastAddedTagID = newTag.id
 	}
 }
-

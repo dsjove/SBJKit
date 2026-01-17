@@ -1,6 +1,8 @@
 import AVFoundation
 import UIKit
+#if !os(watchOS)
 import AudioToolbox
+#endif
 
 final public class SoundPlayer: NSObject, AVAudioPlayerDelegate {
 	@MainActor public static let shared = SoundPlayer()
@@ -50,10 +52,12 @@ final public class SoundPlayer: NSObject, AVAudioPlayerDelegate {
 			} catch {
 			}
 		}
+#if !os(watchOS)
 		if let id = source.sysNum {
 			let soundID = SystemSoundID(id)
 			AudioServicesPlaySystemSound(soundID)
 		}
+#endif
 	}
 
 	public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {

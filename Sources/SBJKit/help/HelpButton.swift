@@ -1,6 +1,4 @@
 import SwiftUI
-import WebKit
-import ObjectiveC
 
 extension AppInfo {
 	public static let companyName = "Software by Jove"
@@ -33,6 +31,10 @@ public struct AssetPath: Equatable, Hashable {
 		return nil
 	}
 }
+
+#if !os(watchOS)
+import WebKit
+import ObjectiveC
 
 public struct HelpButton: View {
 	let asset: AssetPath
@@ -106,3 +108,5 @@ public struct HelpButton: View {
 		}
 	}
 }
+
+#endif

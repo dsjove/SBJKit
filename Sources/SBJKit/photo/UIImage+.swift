@@ -10,7 +10,6 @@ public extension UIImage {
 		}
 		self.init(data: data)
 	}
-
 	func shrinkTo(_ targetSize: CGSize) -> UIImage {
 		if self.size.width <= targetSize.width && self.size.height <= targetSize.height {
 			return self
@@ -25,10 +24,13 @@ public extension UIImage {
 			width: size.width * scaleFactor,
 			height: size.height * scaleFactor
 		)
-
+		#if !os(watchOS)
 		let renderer = UIGraphicsImageRenderer(size: scaledSize)
 		return renderer.image { _ in
 			self.draw(in: CGRect(origin: .zero, size: scaledSize))
 		}
+		#else
+		return self //TODO
+		#endif
 	}
 }

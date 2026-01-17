@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 
 extension FixedWidthInteger {
@@ -252,4 +253,4 @@ public struct PhotoImportMenu<Content: View>: View {
 		}
 	}
 }
-
+#endif

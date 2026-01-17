@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import PhotosUI
 import UIKit
@@ -46,3 +47,4 @@ public struct PhotoPickerView: UIViewControllerRepresentable {
 		}
 	}
 }
+#endif

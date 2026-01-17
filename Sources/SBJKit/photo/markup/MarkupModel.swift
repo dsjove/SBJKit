@@ -1,4 +1,5 @@
 import SwiftUI
+#if !os(watchOS)
 import PencilKit
 
 @MainActor
@@ -83,3 +84,5 @@ final class MarkupModel: ObservableObject {
 		return composed
 	}
 }
+
+#endif

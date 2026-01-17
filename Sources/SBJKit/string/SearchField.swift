@@ -12,7 +12,9 @@ public struct SearchField<S: SearchProtocol>: View {
 	public var body: some View {
 		TextField(titleKey, text: $searching.text)
 			.oneLiner()
+	#if !os(watchOS)
 			.autocapitalization(.none)
+	#endif
 			.disableAutocorrection(true)
 			.padding(8)
 			.overlay(

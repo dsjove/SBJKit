@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 
 public struct ShareSheet: UIViewControllerRepresentable {
@@ -26,3 +27,4 @@ public struct ShareSheet: UIViewControllerRepresentable {
 
 	public func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+#endif

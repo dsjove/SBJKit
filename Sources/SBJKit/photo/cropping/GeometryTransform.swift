@@ -45,6 +45,7 @@ extension GeometryTransforming {
 
 public extension GeometryTransform {
 	 func render(_ image: UIImage) -> UIImage {
+	 #if !os(watchOS)
 		let cropRect = crop
 		let renderSize = CGSize(width: max(1, cropRect.width), height: max(1, cropRect.height))
 
@@ -77,6 +78,9 @@ public extension GeometryTransform {
 
 			image.draw(in: CGRect(x: x, y: y, width: w, height: h))
 		}
+		#else
+		return image //TODO
+		#endif
 	}
 }
 

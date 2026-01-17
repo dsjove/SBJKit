@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 
 public struct ShareButton: View {
@@ -20,3 +21,4 @@ public struct ShareButton: View {
 		}
 	}
 }
+#endif

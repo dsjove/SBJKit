@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import UIKit
 
@@ -43,3 +44,4 @@ public struct ColorPickerView: UIViewControllerRepresentable {
 
 	public func updateUIViewController(_ uiViewController: UIColorPickerViewController, context: Context) {}
 }
+#endif

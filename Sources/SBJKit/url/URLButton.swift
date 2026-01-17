@@ -10,7 +10,9 @@ public struct URLButton: View {
 	public var body: some View {
 		Button(action: {
 			if let url = url, url.isValidURL {
+	#if !os(watchOS)
 				UIApplication.shared.open(url)
+	#endif
 			}
 		}) {
 			if url?.absoluteString.isEmpty ?? true {

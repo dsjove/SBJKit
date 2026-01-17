@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import QuickLook
 
@@ -68,3 +69,4 @@ struct DocumentPreviewSheet: View {
 		.interactiveDismissDisabled()
 	}
 }
+#endif

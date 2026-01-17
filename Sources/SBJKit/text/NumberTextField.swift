@@ -32,15 +32,19 @@ public struct NumberTextField: View {
 			title, value:
 			value, formatter:
 			RangeNumberFormatter(range: range, defaultValue: defaultValue))
-				.keyboardType(keyboardType)
+
+		#if !os(watchOS)
+		.keyboardType(keyboardType)
+		#endif
 		.multilineTextAlignment(.trailing)
 		.oneLiner()
-		.keyboardType(.numbersAndPunctuation)
 	}
 
+	#if !os(watchOS)
 	private var keyboardType: UIKeyboardType {
 		(range.lowerBound >= 0) ? .numberPad : .numbersAndPunctuation
 	}
+	#endif
 
 	final class RangeNumberFormatter: Formatter {
 		let range: ClosedRange<Int>

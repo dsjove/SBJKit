@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 
 public struct PlaceholderTextEditor<Placeholder: View>: View {
@@ -76,3 +77,4 @@ public struct PlaceholderTextEditor<Placeholder: View>: View {
 		return lineHeight * CGFloat(numberOfLines) + 16
 	}
 }
+#endif

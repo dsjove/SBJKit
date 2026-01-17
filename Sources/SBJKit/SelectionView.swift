@@ -173,7 +173,9 @@ public struct SelectionView<Element: Identifiable, Label: View>: View {
 				Spacer()
 				if selected?.id == element.id {
 					Image(systemName: "checkmark")
+	#if !os(watchOS)
 						.foregroundStyle(.selection)
+	#endif
 				}
 			}
 			.disabled(!enabled)

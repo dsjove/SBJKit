@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import SwiftUI
 import UIKit
 
@@ -32,3 +33,4 @@ struct DocumentOpenerHost: UIViewControllerRepresentable {
 		let opener = DocumentOpener()
 	}
 }
+#endif
