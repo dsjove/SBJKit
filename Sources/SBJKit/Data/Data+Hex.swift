@@ -8,6 +8,10 @@
 import Foundation
 
 public extension Data {
+	public var isZero: Bool {
+		isEmpty || allSatisfy({ $0 == .zero })
+	}
+
 	var sbjHexDescription: String {
 		"\n\(sbjHexFormat(bytesPerRow: 16, indent: "\t"))"
 	}
