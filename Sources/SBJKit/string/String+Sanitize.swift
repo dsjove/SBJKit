@@ -9,6 +9,17 @@ public extension String {
 		}
 		return sanitized
 	}
+
+	static func sanitizedFilename(_ raw: String) -> String {
+		let trimmed = raw.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+		guard !trimmed.isEmpty else { return "" }
+
+		let name = URL(fileURLWithPath: trimmed).lastPathComponent
+		let invalidChars = CharacterSet.controlCharacters.union(CharacterSet(charactersIn: "/\\:"))
+		let cleaned = String(name.unicodeScalars.filter { !invalidChars.contains($0) })
+
+		return cleaned.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+	}
 	
 	var isValidCVariableName: Bool {
 		let regex = "^[a-zA-Z_][a-zA-Z0-9_]*$"
