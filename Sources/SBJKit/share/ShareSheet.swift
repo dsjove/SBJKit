@@ -13,7 +13,7 @@ public struct ShareSheet: UIViewControllerRepresentable {
 	public static func item(content: String, name: String? = nil, ext: String? = nil) -> Any {
 		if let name {
 			let suffix = ext.map { $0.isEmpty ? "" : ".\($0)" } ?? ""
-			let fileName = name.sanitizeFileName() + suffix
+			let fileName = name.sanitizedFilename() + suffix
 			if let fileURL = URL.writeToTempFile(named: fileName, content: content) {
 				return fileURL
 			}

@@ -17,7 +17,7 @@ public struct AssetPath: Equatable, Hashable {
 	}
 
 	public var fullName: String {
-		let assetName = title.sanitizeFileName(removeSpaces: true)
+		let assetName = title.sanitizedFilename(removeSpaces: true)
 		let assetFullName = folder + "/" + assetName
 		return assetFullName
 	}

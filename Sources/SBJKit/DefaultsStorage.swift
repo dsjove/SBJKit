@@ -28,14 +28,63 @@ public struct DefaultsStorage<Value> {
 	}
 }
 
-// MARK: - SettingsStorageValueCompatible support
+// MARK: - Optional support
 
-public protocol SettingsStorageValueCompatible {
+extension DefaultsStorage {
+	public init<Wrapped>(
+		wrappedValue defaultValue: Value = nil,
+		_ key: String,
+		store: UserDefaults = .standard
+	) where Value == Optional<Wrapped>, Wrapped: DefaultsStorageValue {
+		self.key = key
+		self.store = store
+		self.defaultValue = defaultValue
+		self.getter = { defaults, key, defaultValue in
+			Wrapped.read(from: defaults, key: key) ?? defaultValue
+		}
+		self.setter = { defaults, key, newValue in
+			if let newValue {
+				newValue.write(to: defaults, key: key)
+			} else {
+				defaults.removeObject(forKey: key)
+			}
+		}
+	}
+
+	public init<Wrapped>(
+		wrappedValue defaultValue: Value = nil,
+		_ key: String,
+		store: UserDefaults = .standard
+	) where Value == Optional<Wrapped>, Wrapped: RawRepresentable, Wrapped.RawValue: DefaultsStorageValue {
+		self.key = key
+		self.store = store
+		self.defaultValue = defaultValue
+		self.getter = { defaults, key, defaultValue in
+			if let raw = Wrapped.RawValue.read(from: defaults, key: key) {
+				if let wrapped = Wrapped(rawValue: raw) {
+					return wrapped
+				}
+			}
+			return defaultValue
+		}
+		self.setter = { defaults, key, newValue in
+			if let newValue {
+				newValue.rawValue.write(to: defaults, key: key)
+			} else {
+				defaults.removeObject(forKey: key)
+			}
+		}
+	}
+}
+
+// MARK: - DefaultsStorageValue support
+
+public protocol DefaultsStorageValue {
 	static func read(from defaults: UserDefaults, key: String) -> Self?
 	func write(to defaults: UserDefaults, key: String)
 }
 
-extension DefaultsStorage where Value: SettingsStorageValueCompatible {
+extension DefaultsStorage where Value: DefaultsStorageValue {
 	public init(
 		wrappedValue defaultValue: Value,
 		_ key: String,
@@ -57,7 +106,7 @@ extension DefaultsStorage where Value: SettingsStorageValueCompatible {
 
 // MARK: - RawRepresentable support
 
-extension DefaultsStorage where Value: RawRepresentable, Value.RawValue: SettingsStorageValueCompatible {
+extension DefaultsStorage where Value: RawRepresentable, Value.RawValue: DefaultsStorageValue {
 	public init(
 		wrappedValue defaultValue: Value,
 		_ key: String,
@@ -68,10 +117,12 @@ extension DefaultsStorage where Value: RawRepresentable, Value.RawValue: Setting
 			key,
 			store: store,
 			get: { defaults, key, defaultValue in
-				guard let raw = Value.RawValue.read(from: defaults, key: key) else {
-					return defaultValue
+				if let raw = Value.RawValue.read(from: defaults, key: key) {
+					if let wrapped = Value(rawValue: raw) {
+						return wrapped
+					}
 				}
-				return Value(rawValue: raw) ?? defaultValue
+				return defaultValue
 			},
 			set: { defaults, key, newValue in
 				newValue.rawValue.write(to: defaults, key: key)
@@ -82,7 +133,7 @@ extension DefaultsStorage where Value: RawRepresentable, Value.RawValue: Setting
 
 // MARK: - Native UserDefaults-supported types
 
-extension Bool: SettingsStorageValueCompatible {
+extension Bool: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> Bool? {
 		defaults.object(forKey: key) as? Bool
 	}
@@ -92,7 +143,7 @@ extension Bool: SettingsStorageValueCompatible {
 	}
 }
 
-extension Int: SettingsStorageValueCompatible {
+extension Int: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> Int? {
 		defaults.object(forKey: key) as? Int
 	}
@@ -102,7 +153,7 @@ extension Int: SettingsStorageValueCompatible {
 	}
 }
 
-extension Double: SettingsStorageValueCompatible {
+extension Double: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> Double? {
 		defaults.object(forKey: key) as? Double
 	}
@@ -112,7 +163,7 @@ extension Double: SettingsStorageValueCompatible {
 	}
 }
 
-extension Float: SettingsStorageValueCompatible {
+extension Float: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> Float? {
 		defaults.object(forKey: key) as? Float
 	}
@@ -122,7 +173,7 @@ extension Float: SettingsStorageValueCompatible {
 	}
 }
 
-extension String: SettingsStorageValueCompatible {
+extension String: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> String? {
 		defaults.string(forKey: key)
 	}
@@ -132,7 +183,7 @@ extension String: SettingsStorageValueCompatible {
 	}
 }
 
-extension Data: SettingsStorageValueCompatible {
+extension Data: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> Data? {
 		defaults.data(forKey: key)
 	}
@@ -142,7 +193,7 @@ extension Data: SettingsStorageValueCompatible {
 	}
 }
 
-extension URL: SettingsStorageValueCompatible {
+extension URL: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> URL? {
 		defaults.url(forKey: key)
 	}
@@ -152,7 +203,7 @@ extension URL: SettingsStorageValueCompatible {
 	}
 }
 
-extension Date: SettingsStorageValueCompatible {
+extension Date: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> Date? {
 		defaults.object(forKey: key) as? Date
 	}
