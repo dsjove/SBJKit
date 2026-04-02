@@ -40,6 +40,15 @@ public struct PhotoEditSheet: View {
 			inset: inset)
 	}
 
+	public init(viewing data: DataAttachment, inset: Double = 0.0, dismiss: (()->())? = nil) {
+		self = .init(
+			image: UIImage(data: data.blob) ?? UIImage(),
+			data: data.blob,
+			edited: nil,
+			dismiss: dismiss,
+			inset: inset)
+	}
+
 	public init(viewing data: Data, inset: Double = 0.0, dismiss: (()->())? = nil) {
 		self = .init(
 			image: UIImage(data: data) ?? UIImage(),
