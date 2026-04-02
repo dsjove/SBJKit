@@ -2,11 +2,12 @@ import SwiftUI
 import SBJKit
 
 public protocol Accessible {
-	// View that does not display text
+	// What the thing is.
+	// TextField's placeholder becomes this.
 	var accessibilityLabel: String? { get }
 	// Consequences of action
 	var accessibilityHint: String? { get }
-	// Value if not part of Label
+	// Text(Field)'s content becomes this
 	var accessibilityValue: String? { get }
 	//TODO: isAccessible
 	//TODO: identifier

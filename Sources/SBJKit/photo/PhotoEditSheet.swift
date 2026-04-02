@@ -3,6 +3,7 @@ import SwiftUI
 
 public struct PhotoEditSheet: View {
 	let image: UIImage
+	let data: Data?
 	let edited: ((UIImage?) -> Void)?
 	let dismiss: (() -> Void)?
 	let inset: Double
@@ -16,12 +17,14 @@ public struct PhotoEditSheet: View {
 
 	public init(
 			image: UIImage,
+			data: Data? = nil,
 			edited: ((UIImage?) -> Void)?,
 			dismiss: (() -> Void)? = nil,
 			maxScale: Double = 8.0,
 			inset: Double = 16.0,
 			opacity: Double = 0.4) {
 		self.image = image
+		self.data = data
 		self.edited = edited
 		self.dismiss = dismiss
 		self.inset = inset
@@ -32,6 +35,15 @@ public struct PhotoEditSheet: View {
 	public init(viewing image: UIImage, inset: Double = 0.0, dismiss: (()->())? = nil) {
 		self = .init(
 			image: image,
+			edited: nil,
+			dismiss: dismiss,
+			inset: inset)
+	}
+
+	public init(viewing data: Data, inset: Double = 0.0, dismiss: (()->())? = nil) {
+		self = .init(
+			image: UIImage(data: data) ?? UIImage(),
+			data: data,
 			edited: nil,
 			dismiss: dismiss,
 			inset: inset)
@@ -116,7 +128,8 @@ public struct PhotoEditSheet: View {
 								reset()
 							}
 							ShareButton {
-								([image].compactMap { $0 }, nil)
+								let shared: Any = data ?? image
+								return ([shared].compactMap { $0 }, nil)
 							}
 						}
 						HelpButton(asset: .init(title: isEditing ? "Edit Photo" : "View Photo", folder: "help", mainBundle: false))
