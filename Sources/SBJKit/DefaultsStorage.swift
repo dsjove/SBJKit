@@ -193,6 +193,16 @@ extension Data: DefaultsStorageValue {
 	}
 }
 
+extension UUID: DefaultsStorageValue {
+	public static func read(from defaults: UserDefaults, key: String) -> UUID? {
+		UUID(uuidString: defaults.object(forKey: key) as? String ?? "")
+	}
+
+	public func write(to defaults: UserDefaults, key: String) {
+		defaults.set(self.uuidString, forKey: key)
+	}
+}
+
 extension URL: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> URL? {
 		defaults.url(forKey: key)

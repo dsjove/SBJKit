@@ -24,6 +24,35 @@ public extension DataAttachment {
 	var utType: UTType? {
 		UTType(utiType)
 	}
+
+	func previewFilename() -> String {
+		let original = URL(fileURLWithPath: filename).lastPathComponent
+		if !URL(fileURLWithPath: original).pathExtension.isEmpty {
+			return original
+		}
+		if !fileExt.isEmpty {
+			return original + "." + fileExt
+		}
+		return original
+	}
+
+	func previewURL(app: String) throws -> URL {
+		let previewDirectory = try Self.makePreviewDirectory(app: app)
+		let previewFileURL = previewDirectory.appendingPathComponent(previewFilename())
+		return previewFileURL
+	}
+
+	static func makePreviewDirectory(app: String) throws -> URL {
+		let directory = FileManager.default.temporaryDirectory
+			.appendingPathComponent(app, isDirectory: true)
+			.appendingPathComponent(UUID().uuidString, isDirectory: true)
+
+		try FileManager.default.createDirectory(
+			at: directory,
+			withIntermediateDirectories: true
+		)
+		return directory
+	}
 }
 
 public struct CapturedAttachment: DataAttachment {
