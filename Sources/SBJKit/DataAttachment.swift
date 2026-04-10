@@ -9,6 +9,18 @@ public protocol DataAttachment {
 	var fileExt: String { get }
 }
 
+@MainActor
+public func shareItem(content: String, name: String? = nil, ext: String? = nil) -> Any {
+	if let name {
+		let suffix = ext.map { $0.isEmpty ? "" : ".\($0)" } ?? ""
+		let fileName = name.sanitizedFilename() + suffix
+		if let fileURL = URL.writeToTempFile(named: fileName, content: content) {
+			return fileURL
+		}
+	}
+	return content
+}
+
 public extension DataAttachment {
 	var filename: String {
 		""
@@ -40,18 +52,6 @@ public extension DataAttachment {
 		let previewDirectory = try Self.makePreviewDirectory(app: app)
 		let previewFileURL = previewDirectory.appendingPathComponent(previewFilename())
 		return previewFileURL
-	}
-
-	@MainActor
-	public static func item(content: String, name: String? = nil, ext: String? = nil) -> Any {
-		if let name {
-			let suffix = ext.map { $0.isEmpty ? "" : ".\($0)" } ?? ""
-			let fileName = name.sanitizedFilename() + suffix
-			if let fileURL = URL.writeToTempFile(named: fileName, content: content) {
-				return fileURL
-			}
-		}
-		return content
 	}
 
 	static func makePreviewDirectory(app: String) throws -> URL {

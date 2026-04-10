@@ -1,6 +1,24 @@
 import Foundation
 import SwiftData
 
+extension Schema.Version: DefaultsStorageValue {
+	public static func read(from defaults: UserDefaults, key: String) -> Schema.Version? {
+		let str = defaults.string(forKey: key)
+		let parts = str?.split(separator: ".", omittingEmptySubsequences: false) ?? []
+		guard parts.count == 3,
+		      let major = Int(parts[0]),
+		      let minor = Int(parts[1]),
+		      let patch = Int(parts[2]) else {
+			return nil
+		}
+		return .init(major, minor, patch)
+	}
+	
+	public func write(to defaults: UserDefaults, key: String) {
+		defaults.set(self.description, forKey: key)
+	}
+}
+
 public extension Error {
 	func printAsNSError() {
 		let nsError = self as NSError
