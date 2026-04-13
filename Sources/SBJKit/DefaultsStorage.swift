@@ -2,16 +2,11 @@ import Foundation
 
 @propertyWrapper
 public struct DefaultsStorage<Value> {
-	private let key: String
-	private let store: UserDefaults
-	private let defaultValue: Value
+	public let key: String
+	public let store: UserDefaults
+	public let defaultValue: Value
 	private let getter: (UserDefaults, String, Value) -> Value
 	private let setter: (UserDefaults, String, Value) -> Void
-
-	public var wrappedValue: Value {
-		get { getter(store, key, defaultValue) }
-		nonmutating set { setter(store, key, newValue) }
-	}
 
 	public init(
 		wrappedValue defaultValue: Value,
@@ -26,54 +21,14 @@ public struct DefaultsStorage<Value> {
 		self.getter = get
 		self.setter = set
 	}
-}
 
-// MARK: - Optional support
-
-extension DefaultsStorage {
-	public init<Wrapped>(
-		wrappedValue defaultValue: Value = nil,
-		_ key: String,
-		store: UserDefaults = .standard
-	) where Value == Optional<Wrapped>, Wrapped: DefaultsStorageValue {
-		self.key = key
-		self.store = store
-		self.defaultValue = defaultValue
-		self.getter = { defaults, key, defaultValue in
-			Wrapped.read(from: defaults, key: key) ?? defaultValue
-		}
-		self.setter = { defaults, key, newValue in
-			if let newValue {
-				newValue.write(to: defaults, key: key)
-			} else {
-				defaults.removeObject(forKey: key)
-			}
-		}
+	public var wrappedValue: Value {
+		get { getter(store, key, defaultValue) }
+		nonmutating set { setter(store, key, newValue) }
 	}
 
-	public init<Wrapped>(
-		wrappedValue defaultValue: Value = nil,
-		_ key: String,
-		store: UserDefaults = .standard
-	) where Value == Optional<Wrapped>, Wrapped: RawRepresentable, Wrapped.RawValue: DefaultsStorageValue {
-		self.key = key
-		self.store = store
-		self.defaultValue = defaultValue
-		self.getter = { defaults, key, defaultValue in
-			if let raw = Wrapped.RawValue.read(from: defaults, key: key) {
-				if let wrapped = Wrapped(rawValue: raw) {
-					return wrapped
-				}
-			}
-			return defaultValue
-		}
-		self.setter = { defaults, key, newValue in
-			if let newValue {
-				newValue.rawValue.write(to: defaults, key: key)
-			} else {
-				defaults.removeObject(forKey: key)
-			}
-		}
+	public func erase() {
+		store.removeObject(forKey: key)
 	}
 }
 
@@ -131,67 +86,61 @@ extension DefaultsStorage where Value: RawRepresentable, Value.RawValue: Default
 	}
 }
 
-// MARK: - Native UserDefaults-supported types
+// MARK: - Optional support
 
-extension Bool: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> Bool? {
-		defaults.object(forKey: key) as? Bool
+extension DefaultsStorage {
+	public init<Wrapped>(
+		wrappedValue defaultValue: Value = nil,
+		_ key: String,
+		store: UserDefaults = .standard
+	) where Value == Optional<Wrapped>, Wrapped: DefaultsStorageValue {
+		self.init(
+			wrappedValue: defaultValue,
+			key,
+			store: store,
+			get: { defaults, key, defaultValue in
+				Wrapped.read(from: defaults, key: key) ?? defaultValue
+			},
+			set: { defaults, key, newValue in
+				if let newValue {
+					newValue.write(to: defaults, key: key)
+				} else {
+					defaults.removeObject(forKey: key)
+				}
+			}
+		)
 	}
 
-	public func write(to defaults: UserDefaults, key: String) {
-		defaults.set(self, forKey: key)
-	}
-}
-
-extension Int: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> Int? {
-		defaults.object(forKey: key) as? Int
-	}
-
-	public func write(to defaults: UserDefaults, key: String) {
-		defaults.set(self, forKey: key)
-	}
-}
-
-extension Double: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> Double? {
-		defaults.object(forKey: key) as? Double
-	}
-
-	public func write(to defaults: UserDefaults, key: String) {
-		defaults.set(self, forKey: key)
-	}
-}
-
-extension Float: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> Float? {
-		defaults.object(forKey: key) as? Float
-	}
-
-	public func write(to defaults: UserDefaults, key: String) {
-		defaults.set(self, forKey: key)
-	}
-}
-
-extension String: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> String? {
-		defaults.string(forKey: key)
-	}
-
-	public func write(to defaults: UserDefaults, key: String) {
-		defaults.set(self, forKey: key)
-	}
-}
-
-extension Data: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> Data? {
-		defaults.data(forKey: key)
-	}
-
-	public func write(to defaults: UserDefaults, key: String) {
-		defaults.set(self, forKey: key)
+	public init<Wrapped>(
+		wrappedValue defaultValue: Value = nil,
+		_ key: String,
+		store: UserDefaults = .standard
+	) where Value == Optional<Wrapped>, Wrapped: RawRepresentable, Wrapped.RawValue: DefaultsStorageValue {
+		self.init(
+			wrappedValue: defaultValue,
+			key,
+			store: store,
+			get: { defaults, key, defaultValue in
+				if let raw = Wrapped.RawValue.read(from: defaults, key: key) {
+					if let wrapped = Wrapped(rawValue: raw) {
+						return wrapped
+					}
+				}
+				return defaultValue
+			},
+			set: { defaults, key, newValue in
+				if let newValue {
+					newValue.rawValue.write(to: defaults, key: key)
+				} else {
+					defaults.removeObject(forKey: key)
+				}
+			}
+		)
 	}
 }
+
+// MARK: - Conversion types
+// NOTE: Codeable is not supported because that is a misuse of user defaults
 
 extension UUID: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> UUID? {
@@ -203,6 +152,8 @@ extension UUID: DefaultsStorageValue {
 	}
 }
 
+// Note: Collection support not consistent
+// Note: Specialized read required for consistent behavior
 extension URL: DefaultsStorageValue {
 	public static func read(from defaults: UserDefaults, key: String) -> URL? {
 		defaults.url(forKey: key)
@@ -213,12 +164,29 @@ extension URL: DefaultsStorageValue {
 	}
 }
 
-extension Date: DefaultsStorageValue {
-	public static func read(from defaults: UserDefaults, key: String) -> Date? {
-		defaults.object(forKey: key) as? Date
+// MARK: - Native UserDefaults-supported types
+
+public protocol PropertyListType {}
+
+extension DefaultsStorageValue where Self: PropertyListType {
+	public static func read(from defaults: UserDefaults, key: String) -> Self? {
+		defaults.object(forKey: key) as? Self
 	}
 
 	public func write(to defaults: UserDefaults, key: String) {
 		defaults.set(self, forKey: key)
 	}
 }
+
+extension Bool: DefaultsStorageValue, PropertyListType {}
+extension Int: DefaultsStorageValue, PropertyListType {}
+extension Double: DefaultsStorageValue, PropertyListType {}
+extension Float: DefaultsStorageValue, PropertyListType {}
+extension String: DefaultsStorageValue, PropertyListType {}
+extension Data: DefaultsStorageValue, PropertyListType {}
+extension Date: DefaultsStorageValue, PropertyListType {}
+//Note: Collections of DefaultsStorageValue is intentionally not supported
+extension Array: DefaultsStorageValue, PropertyListType
+	where Element: PropertyListType {}
+extension Dictionary: DefaultsStorageValue, PropertyListType
+	where Key == String, Value: PropertyListType {}

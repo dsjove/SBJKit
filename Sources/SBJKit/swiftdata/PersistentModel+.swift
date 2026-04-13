@@ -2,34 +2,35 @@ import Foundation
 import SwiftData
 
 extension Schema.Version: DefaultsStorageValue {
+	public init?(from description: String?) {
+		guard let description, !description.isEmpty else { return nil }
+		let parts = description.split(separator: ".", omittingEmptySubsequences: false)
+		if parts.count >= 1 {
+			guard let major = Int(parts[0]) else { return nil }
+			if parts.count >= 2 {
+				guard let minor = Int(parts[1]) else { return nil }
+				if parts.count >= 3 {
+					guard let patch = Int(parts[2]) else { return nil }
+					self.init(major, minor, patch)
+				}
+				else {
+					self.init(major, minor, 0)
+				}
+			}
+			else {
+				self.init(major, 0, 0)
+			}
+		}
+		return nil
+	}
+
 	public static func read(from defaults: UserDefaults, key: String) -> Schema.Version? {
 		let str = defaults.string(forKey: key)
-		let parts = str?.split(separator: ".", omittingEmptySubsequences: false) ?? []
-		guard parts.count == 3,
-		      let major = Int(parts[0]),
-		      let minor = Int(parts[1]),
-		      let patch = Int(parts[2]) else {
-			return nil
-		}
-		return .init(major, minor, patch)
+		return .init(from: str)
 	}
-	
+
 	public func write(to defaults: UserDefaults, key: String) {
 		defaults.set(self.description, forKey: key)
-	}
-}
-
-public extension Error {
-	func printAsNSError() {
-		let nsError = self as NSError
-		print("• error: \(self)")
-		print("• code: \(nsError.code)")
-		print("• domain: \(nsError.domain)")
-		print("• userInfo: \(nsError.userInfo)")
-		print("• description: \(nsError.localizedDescription)")
-		print("• reason: \(nsError.localizedFailureReason ?? "")")
-		print("• options: \(nsError.localizedRecoveryOptions ?? [])")
-		print("• suggestion: \(nsError.localizedRecoverySuggestion ?? "")")
 	}
 }
 
