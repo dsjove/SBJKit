@@ -3,7 +3,7 @@ import SwiftUI
 
 public struct PhotoEditSheet: View {
 	let image: UIImage
-	let data: Data?
+	let attachment: DataAttachment?
 	let edited: ((UIImage?) -> Void)?
 	let dismiss: (() -> Void)?
 	let inset: Double
@@ -17,14 +17,14 @@ public struct PhotoEditSheet: View {
 
 	public init(
 			image: UIImage,
-			data: Data? = nil,
+			attachment: DataAttachment? = nil,
 			edited: ((UIImage?) -> Void)?,
 			dismiss: (() -> Void)? = nil,
 			maxScale: Double = 8.0,
 			inset: Double = 16.0,
 			opacity: Double = 0.4) {
 		self.image = image
-		self.data = data
+		self.attachment = attachment
 		self.edited = edited
 		self.dismiss = dismiss
 		self.inset = inset
@@ -40,19 +40,10 @@ public struct PhotoEditSheet: View {
 			inset: inset)
 	}
 
-	public init(viewing data: DataAttachment, inset: Double = 0.0, dismiss: (()->())? = nil) {
+	public init(viewing attachment: DataAttachment, inset: Double = 0.0, dismiss: (()->())? = nil) {
 		self = .init(
-			image: UIImage(data: data.blob) ?? UIImage(),
-			data: data.blob,
-			edited: nil,
-			dismiss: dismiss,
-			inset: inset)
-	}
-
-	public init(viewing data: Data, inset: Double = 0.0, dismiss: (()->())? = nil) {
-		self = .init(
-			image: UIImage(data: data) ?? UIImage(),
-			data: data,
+			image: UIImage(data: attachment.blob) ?? UIImage(),
+			attachment: attachment,
 			edited: nil,
 			dismiss: dismiss,
 			inset: inset)
@@ -137,7 +128,10 @@ public struct PhotoEditSheet: View {
 								reset()
 							}
 							ShareButton {
-								let shared: Any = data ?? image
+								if let p = attachment, let url = try? p.shareURL(subDir: "share") {
+									return ([url], nil)
+								}
+								let shared: Any = image
 								return ([shared].compactMap { $0 }, nil)
 							}
 						}

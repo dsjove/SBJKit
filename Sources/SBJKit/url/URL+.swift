@@ -55,17 +55,4 @@ public extension URL {
 			NSWorkspace.shared.open(self)
 		#endif
 	}
-
-	static func writeToTempFile(named: String, content: String) -> URL? {
-		let tempDir = FileManager.default.temporaryDirectory
-		//let tempDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-
-		let fileURL = tempDir.appendingPathComponent(named)
-		do {
-			try content.write(to: fileURL, atomically: true, encoding: .utf8)
-			return fileURL
-		} catch {
-			return nil
-		}
-	}
 }

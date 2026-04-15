@@ -8,7 +8,7 @@ public extension String {
 		let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard !trimmed.isEmpty else { return "" }
 
-		let originalName = URL(fileURLWithPath: trimmed).lastPathComponent
+		let originalName = trimmed // we assume no path
 		guard !originalName.isEmpty else { return "" }
 
 		let invalid = CharacterSet(charactersIn: "/\\?%*|\"<>:")
