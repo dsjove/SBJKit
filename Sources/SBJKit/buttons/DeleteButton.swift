@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct DeleteButton : View {
 	let noun: String
+	let accessibilityHint: String?
 	let extra: String
 	let image: ImageName
 	let comfirm: Bool
@@ -12,9 +13,11 @@ public struct DeleteButton : View {
 			_ noun: String,
 			_ extra: String = "",
 			image: ImageName = .system("trash"),
+			accessibilityHint: String? = nil,
 			comfirm: Bool = true,
 			action: @escaping () -> Void) {
 		self.noun = noun
+		self.accessibilityHint = accessibilityHint
 		self.extra = extra
 		self.image = image
 		self.comfirm = comfirm
@@ -34,6 +37,7 @@ public struct DeleteButton : View {
 		}
 		.labelStyle(.iconOnly)
 		.buttonStyle(.borderless)
+		.accessibilityHint(accessibilityHint ?? "")
 		.alert("Delete \(noun)", isPresented: $showingDeleteAlert, actions: {
 			Button("Delete", role: .destructive) {
 				action()

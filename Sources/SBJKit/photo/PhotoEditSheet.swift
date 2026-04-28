@@ -127,7 +127,7 @@ public struct PhotoEditSheet: View {
 							ActionButton("Reset", image: .system("inset.filled.square.dashed")) {
 								reset()
 							}
-							ShareButton {
+							ShareButton("Photo") {
 								if let p = attachment, let url = try? p.shareURL(subDir: "share") {
 									return ([url], nil)
 								}

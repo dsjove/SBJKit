@@ -2,45 +2,44 @@ import SwiftUI
 
 @MainActor
 public struct ActionButton : View {
-	let label: String
-	let accessibilityLabel: String
-	let image: ImageName
-	let labeled: Bool
+	let item: AccessibleImage
 	let action: () -> Void
+
+	public init(
+			_ item: AccessibleImage,
+			action: @escaping () -> Void) {
+		self.item = item
+		self.action = action
+	}
 
 	public init(
 			_ label: String,
 			labeled: Bool = false,
 			accessibilityLabel: String? = nil,
 			image: ImageName = .none,
-			system: Bool = true,
 			action: @escaping () -> Void) {
-		self.label = label
-		self.accessibilityLabel = accessibilityLabel ?? label
-		self.labeled = labeled
-		self.image = image
-		self.action = action
+		self.init(AccessibleImageItem(image: image, labeled: labeled, label: label, hint: nil, value: nil), action: action)
 	}
 
 	public var body: some View {
 		Button {
 			action()
 		} label: {
-			if image.isEmpty {
-				Text(label)
-					.accessibilityLabel(accessibilityLabel)
-			} else if label.isEmpty {
-				Label(label, image: image)
+			if item.image.isEmpty {
+				Text(item.label)
+					.accessibility(item)
+			} else if item.label.isEmpty {
+				Label(item.label, image: item.image)
 					.labelStyle(.iconOnly)
-					.accessibilityLabel(accessibilityLabel)
-			} else if labeled {
-				Label(label, image: image)
+					.accessibility(item)
+			} else if item.labeled {
+				Label(item.label, image: item.image)
 					.labelStyle(.titleAndIcon)
-					.accessibilityLabel(accessibilityLabel)
+					.accessibility(item)
 			} else {
-				Label(label, image: image)
+				Label(item.label, image: item.image)
 					.labelStyle(.iconOnly)
-					.accessibilityLabel(accessibilityLabel)
+					.accessibility(item)
 			}
 		}
 	}

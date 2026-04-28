@@ -2,6 +2,7 @@
 import SwiftUI
 
 public struct ShareButton: View {
+	let noun: String
 	let items: ()->(activityItems: [Any], applicationActivities: [UIActivity]?)
 	let appear: (()->())?
 	let dismissed: (()->())?
@@ -9,16 +10,18 @@ public struct ShareButton: View {
 	@State private var showingShareSheet = false
 
 	public init(
+		_ noun: String,
 		items: @escaping () -> (activityItems: [Any], applicationActivities: [UIActivity]?),
 		appear: (()->())? = nil,
 		dismissed: (()->())? = nil) {
+		self.noun = noun
 		self.items = items
 		self.appear = appear
 		self.dismissed = dismissed
 	}
 
 	public var body: some View {
-		ActionButton("Share", image: .system("square.and.arrow.up")) {
+		ActionButton("Share \(noun)", image: .system("square.and.arrow.up")) {
 			appear?()
 			self.showingShareSheet.toggle()
 		}
