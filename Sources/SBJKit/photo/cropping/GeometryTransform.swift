@@ -84,9 +84,14 @@ public extension GeometryTransform {
 	}
 }
 
-private struct ConditionalClip: ViewModifier {
+public struct ConditionalClip: ViewModifier {
 	let clip: Bool
-	func body(content: Content) -> some View {
+
+	public init(clip: Bool) {
+		self.clip = clip
+	}
+
+	public func body(content: Content) -> some View {
 		if clip {
 			content.clipped()
 		} else {
