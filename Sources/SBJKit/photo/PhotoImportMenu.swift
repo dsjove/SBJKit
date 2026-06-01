@@ -204,11 +204,32 @@ public struct PhotoImportMenu<Content: View>: View {
 					switch result {
 					case .success(let urls):
 						if let url = urls.first {
-							if let data = try? Data(contentsOf: url),
-							   let uiImage = UIImage(data: data) {
-								DispatchQueue.main.async {
-									state.importedImage = uiImage
+							let accessGranted = url.startAccessingSecurityScopedResource()
+							defer {
+								if accessGranted {
+									url.stopAccessingSecurityScopedResource()
 								}
+							}
+							do {
+								var coordinatedError: NSError?
+								let coordinator = NSFileCoordinator()
+								coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatedError) { coordinatedURL in
+									// Load the data
+									if let data = try? Data(contentsOf: coordinatedURL),
+									   let uiImage = UIImage(data: data) {
+										DispatchQueue.main.async {
+											state.importedImage = uiImage
+										}
+									} else {
+										// Handle unsupported/invalid image data
+										print("Failed to read image data from: \(coordinatedURL)")
+									}
+								}
+								if let coordinatedError {
+									throw coordinatedError
+								}
+							} catch {
+								print("File import error:", error)
 							}
 						}
 					case .failure:
