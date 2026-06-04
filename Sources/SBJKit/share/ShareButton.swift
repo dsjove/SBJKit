@@ -1,9 +1,11 @@
 #if !os(watchOS)
 import SwiftUI
 
+public typealias ShareItems = (activityItems: [Any], applicationActivities: [UIActivity]?)
+
 public struct ShareButton: View {
 	let noun: String
-	let items: ()->(activityItems: [Any], applicationActivities: [UIActivity]?)
+	let items: ()->ShareItems
 	let appear: (()->())?
 	let dismissed: (()->())?
 
@@ -11,7 +13,7 @@ public struct ShareButton: View {
 
 	public init(
 		_ noun: String,
-		items: @escaping () -> (activityItems: [Any], applicationActivities: [UIActivity]?),
+		items: @escaping ()->ShareItems,
 		appear: (()->())? = nil,
 		dismissed: (()->())? = nil) {
 		self.noun = noun
@@ -26,9 +28,11 @@ public struct ShareButton: View {
 			self.showingShareSheet.toggle()
 		}
 		//TODO: if button is transitory this will never show
-		.sheet(isPresented: $showingShareSheet) {
+		.sheet(isPresented: $showingShareSheet, onDismiss: {
+			dismissed?()
+		}) {
 			let p = items()
-			ShareSheet(activityItems: p.activityItems, applicationActivities: p.applicationActivities, dismissed: dismissed)
+			ShareSheet(activityItems: p.activityItems, applicationActivities: p.applicationActivities, dismissed: nil)
 		}
 	}
 }
