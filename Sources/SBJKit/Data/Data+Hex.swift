@@ -8,7 +8,7 @@
 import Foundation
 
 public extension Data {
-	public var isZero: Bool {
+	var isZero: Bool {
 		isEmpty || allSatisfy({ $0 == .zero })
 	}
 

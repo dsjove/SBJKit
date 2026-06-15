@@ -57,7 +57,7 @@ public extension PersistentModel {
 
 	func saveNow() {
 		do {
-			try try modelContext?.save()
+			try modelContext?.save()
 		}
 		catch {
 			//TODO: log full NSError

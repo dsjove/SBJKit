@@ -30,7 +30,7 @@ public func observeValue<S: AnyObject, C: AnyObject, V>(
 	guard let src else { return .init() }
 	let hasContext = ctx != nil
 	let token = ObserveToken()
-	func track(src: S?, context: C?) {
+		@Sendable func track(src: S?, context: C?) {
 		guard let src, let context else { return }
 		withObservationTracking(
 			/*apply:*/ { [weak weakSrc = src] in

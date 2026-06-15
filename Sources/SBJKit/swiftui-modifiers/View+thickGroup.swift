@@ -1,5 +1,4 @@
 import SwiftUI
-import SBJKit
 
 private struct ThickGroupModifier: ViewModifier {
 	func body(content: Content) -> some View {

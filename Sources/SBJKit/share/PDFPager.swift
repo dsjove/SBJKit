@@ -97,7 +97,7 @@ public class PDFPager {
 		var attributesWithPara = attr
 		attributesWithPara[.paragraphStyle] = paragraphStyle
 		let str = NSAttributedString(string: text, attributes: attributesWithPara)
-		var size = intrinsicSize(str, maxWidth: maxWidth, xOffset: xOffset)
+		let size = intrinsicSize(str, maxWidth: maxWidth, xOffset: xOffset)
 
 		let pos: Double
 		if let cursor {

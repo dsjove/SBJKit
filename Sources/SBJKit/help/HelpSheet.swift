@@ -111,7 +111,7 @@ fileprivate struct HelpWebView: UIViewRepresentable {
 
 	func updateUIView(_ uiView: WKWebView, context: Context) {
 		guard let state = objc_getAssociatedObject(uiView, &HelpWebView.stateKey) as? StateHolder else { return }
-		let substitutionsHash = substitutions.hashValue
+		//let substitutionsHash = substitutions.hashValue
 		if asset != state.lastLoadedAsset {
 			if let htmlString = asset.stringValue()  {
 				let allSubstitutions = substitutions.merging(

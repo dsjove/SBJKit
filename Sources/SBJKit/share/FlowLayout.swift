@@ -111,7 +111,7 @@ public struct StringLayout {
 		self.url = url
 		if let string = string ?? url?.absoluteString, !string.isEmpty {
 			let attr: [NSAttributedString.Key: Any] = font == nil ? [:] : [
-				.font: font
+				.font: font!
 			]
 			let paragraphStyle = NSMutableParagraphStyle()
 			var attributesWithPara = attr

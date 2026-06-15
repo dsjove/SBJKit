@@ -3,7 +3,6 @@ import SwiftData
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
-import SBJKit
 
 public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 	@Environment(\.dismiss) private var dismiss

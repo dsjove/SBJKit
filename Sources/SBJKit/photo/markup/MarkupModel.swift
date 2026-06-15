@@ -37,7 +37,7 @@ final class MarkupModel: ObservableObject {
 				self.toolPicker.addObserver(self.canvasView)
 				self.canvasView.becomeFirstResponder()
 			}
-			.onChange(of: hitTest) { newValue in
+			.onChange(of: hitTest) { _, newValue in
 				self.toolPicker.setVisible(newValue, forFirstResponder: self.canvasView)
 				if newValue {
 					self.canvasView.becomeFirstResponder()

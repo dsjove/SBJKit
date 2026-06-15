@@ -7,7 +7,7 @@ public extension ModelContext {
 	//Predicate struggles with '.id' not being concrete
 	func find<T: PersistentModel>(selection id: T.ID?) -> T? {
 		guard let id else { return nil }
-		var descriptor = FetchDescriptor<T>()
+		let descriptor = FetchDescriptor<T>()
 		if let results = try? self.fetch(descriptor) {
 			return results.first { $0.id == id }
 		}

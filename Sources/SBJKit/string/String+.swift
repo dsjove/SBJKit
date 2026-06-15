@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 public extension String {
-	public func isEquivelant(to other: String?) -> Bool {
+	func isEquivelant(to other: String?) -> Bool {
 		guard let other else { return false }
 		let lhs = self.trimmed.lowercased()
 		let rhs = other.trimmed.lowercased()
