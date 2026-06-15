@@ -10,6 +10,7 @@ public struct ShareButton: View {
 	let dismissed: (()->())?
 
 	@State private var showingShareSheet = false
+	@State private var cache: ShareItems? = nil
 
 	public init(
 		_ noun: String,
@@ -24,14 +25,16 @@ public struct ShareButton: View {
 
 	public var body: some View {
 		ActionButton("Share \(noun)", image: .system("square.and.arrow.up")) {
+			cache = items()
 			appear?()
 			self.showingShareSheet.toggle()
 		}
 		//TODO: if button is transitory this will never show
 		.sheet(isPresented: $showingShareSheet, onDismiss: {
+			cache = nil
 			dismissed?()
 		}) {
-			let p = items()
+			let p = cache ?? items()
 			ShareSheet(activityItems: p.activityItems, applicationActivities: p.applicationActivities, dismissed: nil)
 		}
 	}
