@@ -118,160 +118,166 @@ public struct PhotoImportMenu<Content: View>: View {
 		self.label = label
 	}
 
-	public var body: some View {
-		//TODO: if options is just 1 item, do a tap for that one item
-		Menu {
-			if options.contains(.view), let image {
-				Button() {
-					state.viewingImage = IdentifiableImage(image)
-				} label: {
-					Label("View", systemImage: "eye")
-				}
+	@ViewBuilder
+	func menuItems(_ labelIsHidden: Bool) -> some View {
+		if options.contains(.view), let image {
+			ActionButton("View", labeled: !labelIsHidden, image: .system("eye")) {
+				state.viewingImage = IdentifiableImage(image)
 			}
-			if options.contains(.share), let image {
-				Button() {
-					state.shareImage = IdentifiableImage(image)
-				} label: {
-					Label("Share", systemImage: "square.and.arrow.up")
-				}
+		}
+		if options.contains(.share), let image {
+			ActionButton("Share", labeled: !labelIsHidden, image: .system("square.and.arrow.up")) {
+				state.shareImage = IdentifiableImage(image)
 			}
-			if options.contains(.photos) && PhotoMenuOptions.canShowPhotos {
-				Button(action: { state.isPickerPresented = true }) {
-					Label("Photos", systemImage: "photo.on.rectangle")
-				}
+		}
+		if options.contains(.photos) && PhotoMenuOptions.canShowPhotos {
+			ActionButton("Photos", labeled: !labelIsHidden, image: .system("photo.on.rectangle")) {
+				state.isPickerPresented = true
 			}
-			if options.contains(.camera) && PhotoMenuOptions.canShowCamera {
-				Button(action: { state.isCameraPresented = true }) {
-					Label("Camera", systemImage: "camera")
-				}
+		}
+		if options.contains(.camera) && PhotoMenuOptions.canShowCamera {
+			ActionButton("Camera", labeled: !labelIsHidden, image: .system("camera")) {
+				state.isCameraPresented = true
 			}
-			if options.contains(.files) && PhotoMenuOptions.canShowFiles {
-				Button(action: { state.isFileImporterPresented = true }) {
-					Label("Files", systemImage: "folder")
-				}
+		}
+		if options.contains(.files) && PhotoMenuOptions.canShowFiles {
+			ActionButton("Files", labeled: !labelIsHidden, image: .system("folder")) {
+				state.isFileImporterPresented = true
 			}
-			if options.contains(.paste) {
-				Button(action: {
-					if let pasted = UIPasteboard.general.image {
-						DispatchQueue.main.async {
-							state.importedImage = pasted
-						}
-					}
-				}) {
-					Label("Paste", systemImage: "doc.on.clipboard")
-				}
-				.disabled(!state.canPasteImage)
-			}
-			if options.contains(.edit) && image != nil {
-				Button(action: {
-					if let currentImage = image {
-						DispatchQueue.main.async {
-							state.importedImage = currentImage
-						}
-					}
-				}) {
-					Label("Edit", systemImage: "pencil")
-				}
-			}
-			if options.contains(.clear) && image != nil {
-				Button(role: .destructive) {
-					state.isPhotoClearPresented = true
-				} label: {
-					Label("Clear", systemImage: "trash")
-				}
-			}
-		} label: {
-			label()
-				.fullScreenCover(item: $state.viewingImage) { identifiable in
-					PhotoEditSheet(viewing: identifiable.value) {
-						state.viewingImage = nil
+		}
+		if options.contains(.paste) {
+			ActionButton("Paste", labeled: !labelIsHidden, image: .system("doc.on.clipboard")) {
+				if let pasted = UIPasteboard.general.image {
+					DispatchQueue.main.async {
+						state.importedImage = pasted
 					}
 				}
-				.sheet(item: $state.shareImage) { identifiable in
-					ShareSheet(activityItems: [identifiable.value], applicationActivities: nil)
+			}
+			.disabled(!state.canPasteImage)
+		}
+		if options.contains(.edit) && image != nil {
+			ActionButton("Edit", labeled: !labelIsHidden, image: .system("pencil")) {
+				if let currentImage = image {
+					DispatchQueue.main.async {
+						state.importedImage = currentImage
+					}
 				}
-				.sheet(isPresented: $state.isPickerPresented) {
-					PhotoPickerView(image: $state.importedImage)
+			}
+		}
+		if options.contains(.clear) && image != nil {
+			Button(role: .destructive) {
+				state.isPhotoClearPresented = true
+			} label: {
+				Label("Clear", systemImage: "trash")
+			}
+		}
+	}
+
+	@ViewBuilder
+	func actions(content: some View) -> some View {
+		content
+			.onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+				state.canPasteImage = UIPasteboard.general.hasImages
+			}
+			.fullScreenCover(item: $state.viewingImage) { identifiable in
+				PhotoEditSheet(viewing: identifiable.value) {
+					state.viewingImage = nil
 				}
-				.fullScreenCover(isPresented: $state.isCameraPresented) {
-					CameraPickerView(image: $state.importedImage)
-				}
-				.fileImporter(
-					isPresented: $state.isFileImporterPresented,
-					allowedContentTypes: [.image],
-					allowsMultipleSelection: false
-				) { result in
-					switch result {
-					case .success(let urls):
-						if let url = urls.first {
-							let accessGranted = url.startAccessingSecurityScopedResource()
-							defer {
-								if accessGranted {
-									url.stopAccessingSecurityScopedResource()
-								}
+			}
+			.sheet(item: $state.shareImage) { identifiable in
+				ShareSheet(activityItems: [identifiable.value], applicationActivities: nil)
+			}
+			.sheet(isPresented: $state.isPickerPresented) {
+				PhotoPickerView(image: $state.importedImage)
+			}
+			.fullScreenCover(isPresented: $state.isCameraPresented) {
+				CameraPickerView(image: $state.importedImage)
+			}
+			.fileImporter(
+				isPresented: $state.isFileImporterPresented,
+				allowedContentTypes: [.image],
+				allowsMultipleSelection: false
+			) { result in
+				switch result {
+				case .success(let urls):
+					if let url = urls.first {
+						let accessGranted = url.startAccessingSecurityScopedResource()
+						defer {
+							if accessGranted {
+								url.stopAccessingSecurityScopedResource()
 							}
-							do {
-								var coordinatedError: NSError?
-								let coordinator = NSFileCoordinator()
-								coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatedError) { coordinatedURL in
-									// Load the data
-									if let data = try? Data(contentsOf: coordinatedURL),
-									   let uiImage = UIImage(data: data) {
-										DispatchQueue.main.async {
-											state.importedImage = uiImage
-										}
-									} else {
-										// Handle unsupported/invalid image data
-										print("Failed to read image data from: \(coordinatedURL)")
+						}
+						do {
+							var coordinatedError: NSError?
+							let coordinator = NSFileCoordinator()
+							coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatedError) { coordinatedURL in
+								// Load the data
+								if let data = try? Data(contentsOf: coordinatedURL),
+								   let uiImage = UIImage(data: data) {
+									DispatchQueue.main.async {
+										state.importedImage = uiImage
 									}
+								} else {
+									// Handle unsupported/invalid image data
+									print("Failed to read image data from: \(coordinatedURL)")
 								}
-								if let coordinatedError {
-									throw coordinatedError
-								}
-							} catch {
-								print("File import error:", error)
 							}
+							if let coordinatedError {
+								throw coordinatedError
+							}
+						} catch {
+							print("File import error:", error)
 						}
-					case .failure:
-						break
+					}
+				case .failure:
+					break
+				}
+			}
+			.alert("Clear Photo", isPresented: $state.isPhotoClearPresented) {
+				Button("Clear", role: .destructive) {
+					DispatchQueue.main.async {
+						self.image = nil
 					}
 				}
-				.alert("Clear Photo", isPresented: $state.isPhotoClearPresented) {
-					Button("Clear", role: .destructive) {
+				Button("Cancel", role: .cancel) { }
+			}
+			.onChange(of: state.importedImage) { _, newValue in
+				state.importedImage = nil
+				if let newValue {
+					if editImports {
 						DispatchQueue.main.async {
-							self.image = nil
+							state.editingImage = IdentifiableImage(newValue)
 						}
 					}
-					Button("Cancel", role: .cancel) { }
-				}
-				.onChange(of: state.importedImage) { _, newValue in
-					state.importedImage = nil
-					if let newValue {
-						if editImports {
-							DispatchQueue.main.async {
-								state.editingImage = IdentifiableImage(newValue)
-							}
-						}
-						else {
-							image = newValue
-						}
+					else {
+						image = newValue
+					}
+				} // else canceled
+			}
+			.fullScreenCover(item: $state.editingImage) { identifiable in
+				PhotoEditSheet(image: identifiable.value) { result in
+					if let result {
+						image = result
 					} // else canceled
 				}
-				.fullScreenCover(item: $state.editingImage) { identifiable in
-					PhotoEditSheet(image: identifiable.value) { result in
-						if let result {
-							image = result
-						} // else canceled
-					}
-					dismiss: {
-						state.editingImage = nil
-					}
+				dismiss: {
+					state.editingImage = nil
 				}
-		}
-		.menuStyle(.button)
-		.onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-			state.canPasteImage = UIPasteboard.general.hasImages
+			}
+	}
+
+	public var body: some View {
+		if options.rawValue.nonzeroBitCount == 1 {
+			actions(content: menuItems(true))
+		} else {
+			Menu {
+				menuItems(false)
+			} label: {
+				actions(content: label())
+			}
+			.menuStyle(.button)
 		}
 	}
 }
 #endif
+
