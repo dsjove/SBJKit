@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 import UniformTypeIdentifiers
 
 public protocol DataAttachment {
@@ -7,8 +6,6 @@ public protocol DataAttachment {
 	var utiType: String { get }
 	var name: String { get }
 }
-
-//NOTE: share sheets really want to work with URLs
 
 public extension DataAttachment {
 	var sanitizedName: String {
@@ -82,26 +79,5 @@ fileprivate func writeToTempFile(named: String, content: String) -> URL? {
 		return fileURL
 	} catch {
 		return nil
-	}
-}
-
-public struct CapturedAttachment {
-	public let blob: Data
-	public let utiType: String
-
-	public init(blob: Data, utiType: String) {
-		self.blob = blob
-		self.utiType = utiType
-	}
-}
-
-public protocol PhotoImport {
-	var blob: Data { get }
-	var photoName: String { get }
-}
-
-public extension PhotoImport where Self: DataAttachment {
-	var photoName: String {
-		sanitizedName
 	}
 }

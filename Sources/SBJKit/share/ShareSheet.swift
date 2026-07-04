@@ -1,6 +1,8 @@
 #if !os(watchOS)
 import SwiftUI
 
+//NOTE: share sheets really want to work with URLs
+
 public struct ShareSheet: UIViewControllerRepresentable {
 	let activityItems: [Any]
 	let applicationActivities: [UIActivity]?
