@@ -1,14 +1,23 @@
 import Foundation
 
 public struct GeometricMirror: Equatable {
-	public var horizontalOnly: Bool = false
-	public var horizontal: Bool = false
-	public var vertical: Bool = false
+	public var horizontalOnly: Bool
+	public let horizontalInit: Bool
+	public let verticalInit: Bool
+	public var horizontal: Bool
+	public var vertical: Bool
 
 	public init(horizontalOnly: Bool = false, horizontal: Bool = false, vertical: Bool = false) {
 		self.horizontalOnly = horizontalOnly
+		self.horizontalInit = horizontal
 		self.horizontal = horizontal
+		self.verticalInit = vertical
 		self.vertical = vertical
+	}
+
+	public mutating func reset() {
+		horizontal = horizontalInit
+		vertical = verticalInit
 	}
 
 	public var hasEdits: Bool { horizontal || vertical }

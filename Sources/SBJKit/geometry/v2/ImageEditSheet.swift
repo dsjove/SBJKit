@@ -11,54 +11,6 @@ struct ImageEditContinue: AccessibleImage {
 	var label: String { "Done Editing" }
 }
 
-struct ImageMirror: AccessibleImage {
-	let mirror: GeometryModel.Mirror
-	var image: ImageName {
-		let name = {
-			if mirror.horizontalOnly {
-				return "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right"
-			}
-			if !mirror.horizontal {
-				if !mirror.vertical {
-					return "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right"
-				}
-				return "arrow.trianglehead.up.and.down.righttriangle.up.righttriangle.down.fill"
-			}
-			if mirror.vertical {
-				return "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right.fill"
-			}
-			return "arrow.trianglehead.up.and.down.righttriangle.up.righttriangle.down"
-		}()
-		return .system(name)
-	}
-	var label: String {
-		if mirror.horizontalOnly {
-			return "Flip"
-		}
-		if !mirror.horizontal {
-			if !mirror.vertical {
-				return "Flip Horizontal"
-			}
-			return "Reset Flip"
-		}
-		if mirror.vertical {
-			return "Flip Vertical"
-		}
-		return "Flip Horizontal and Vertical"
-	}
-}
-
-struct ImageRotate: AccessibleImage {
-	let clockwise: Bool
-	var image: ImageName { .system(clockwise ? "rotate.right" :"rotate.left") }
-	var label: String { clockwise ? "Rotate Clockwise" : "Rotate Counterclockwise" }
-}
-
-struct ImageZoomReset: AccessibleImage {
-	var image: ImageName { .system("inset.filled.square.dashed") }
-	var label: String { "Reset Zoom" }
-}
-
 struct MarkupToolsToggle: AccessibleImage {
 	let enabled: Bool
 	var image: ImageName { .system(enabled ? "pencil.slash" : "pencil.tip") }

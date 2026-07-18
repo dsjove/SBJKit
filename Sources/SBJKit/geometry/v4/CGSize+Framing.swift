@@ -20,16 +20,6 @@ public extension CGSize {
 	func scaled(_ value: CGSize) -> CGSize {
 		.init(width: width * value.width, height: height * value.height)
 	}
-
-	func offset(_ value: CGSize) -> CGSize {
-		.init(width: width + value.width, height: height + value.height)
-	}
-}
-
-public func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
-	let dx = a.x - b.x
-	let dy = a.y - b.y
-	return sqrt(dx*dx + dy*dy)
 }
 
 public extension CGPoint {
@@ -39,5 +29,11 @@ public extension CGPoint {
 
 	func offset(_ value: CGSize) -> CGPoint {
 		.init(x: x + value.width, y: y + value.height)
+	}
+
+	func distance(to b: CGPoint) -> CGFloat {
+		let dx = self.x - b.x
+		let dy = self.y - b.y
+		return sqrt(dx*dx + dy*dy)
 	}
 }

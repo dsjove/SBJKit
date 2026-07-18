@@ -26,6 +26,11 @@ public final class RectangleFraming {
 		}
 	}
 
+	public func rotate(clockwise: Bool = true) {
+		let next = rotation.degrees + (clockwise ? 90 : -90)
+		rotation = .degrees(next.truncatingRemainder(dividingBy: 360))
+	}
+
 	public private(set) var sourcePoints: [CGPoint] = [.zero, .zero, .zero, .zero]
 	public private(set) var sourceBounds: CGRect = .zero
 	public private(set) var sourceInscribed: CGRect = .zero
@@ -128,6 +133,8 @@ public final class RectangleFraming {
 			}
 		}
 	}
+	public var containerRect: CGRect { CGRect(origin: .zero, size: containerSize) }
+
 	public var frameMode: ScaleMode = .fit {
 		didSet {
 			if frameMode != oldValue {
@@ -138,6 +145,11 @@ public final class RectangleFraming {
 
 	public private(set) var frameScale: CGFloat = 1.0
 	public private(set) var frameSize: CGSize = .zero
+	public var frameRect: CGRect {
+		let size = frameSize
+		let origin = CGPoint(x: (containerSize.width - size.width)/2, y: (containerSize.height - size.height)/2)
+		return CGRect(origin: origin, size: CGSize(width: size.width, height: size.height))
+	}
 	public private(set) var framePoints: [CGPoint] = [.zero, .zero, .zero, .zero]
 
 	private func recalcFraming() {
@@ -156,12 +168,16 @@ public final class RectangleFraming {
 		recalcPositioning()
 	}
 
-	public var mirror: GeometricMirror
+	public private(set) var mirror: GeometricMirror
 	public var magnify: CGFloat = 1.0
 	public var offset: CGSize = .zero
 
 	public private(set) var positionedPoints: [CGPoint] = [.zero, .zero, .zero, .zero]
 	public private(set) var positionedSize: CGSize = .zero
+
+	public func flip() {
+		mirror = mirror.next
+	}
 
 	public var containedOffset: CGSize {
 		let toSource = sourceRect.size.scaled(offset)
@@ -171,9 +187,17 @@ public final class RectangleFraming {
 
 	private func recalcPositioning() {
 		positionedPoints = framePoints.map { $0.scaled(magnify).offset(containedOffset) }
-		positionedSize = CGSize(width: distance(positionedPoints[0], positionedPoints[1]), height: distance(positionedPoints[1], positionedPoints[2]))
+		positionedSize = CGSize(width: positionedPoints[0].distance(to: positionedPoints[1]), height: positionedPoints[1].distance(to: positionedPoints[2]))
 	}
 
-	private func clampOsset() {
+	public func reset() {
+		magnify = 1.0
+		offset = .zero
+		mirror.reset()
+		rotation = .zero
 	}
+
+//	var crop: CGRect?
+//	private func clampOffset() {
+//	}
 }

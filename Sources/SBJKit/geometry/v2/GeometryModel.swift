@@ -127,33 +127,8 @@ public class GeometryModel {
 	}
 
 // MARK: Edits
-	public struct Mirror {
-		public var horizontalOnly: Bool = false
-		public var horizontal: Bool = false
-		public var vertical: Bool = false
 
-		var hasEdits: Bool {
-			horizontal || vertical
-		}
-
-		var next: Mirror {
-			if !horizontal {
-				if !vertical {
-					return .init(horizontal: true, vertical: false)
-				}
-				return .init(horizontal: false, vertical: false)
-			}
-			if vertical {
-				return .init(horizontal: false, vertical: true)
-			}
-			if horizontalOnly {
-				return .init(horizontal: false, vertical: false)
-			}
-			return .init(horizontal: true, vertical: true)
-		}
-	}
-
-	public private(set) var mirror: Mirror = .init()
+	public private(set) var mirror: GeometricMirror = .init()
 	//public private(set) var crop: CGRect?
 
 	var hasEdits: Bool {

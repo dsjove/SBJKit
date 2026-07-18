@@ -12,16 +12,16 @@ public extension UIImage {
 //MARK: View Modifier
 
 public struct RectangleFramingModifier: ViewModifier {
-    let model: RectangleFraming
+	let model: RectangleFraming
 
-    public func body(content: Content) -> some View {
+	public func body(content: Content) -> some View {
 		content
 			.frame(width: model.positionedSize.width, height: model.positionedSize.height)
 			.scaleEffect(x: model.mirror.horizontal ? -1 : 1, y: model.mirror.vertical ? -1 : 1)
 			.scaleEffect(model.magnify)
 			.rotationEffect(model.rotation)
 			.offset(model.containedOffset)
-    }
+	}
 }
 
 public extension View {
@@ -39,12 +39,14 @@ public struct RectangleFramingDiagram: View {
 		// Background
 			Color.gray.opacity(0.25).ignoresSafeArea()
 		// Guides
-			Rectangle()
-				.stroke(Color.blue.opacity(1.0), lineWidth: 5)
-				.frame(width: model.containerSize.width, height: model.containerSize.height)
-			Rectangle()
-				.stroke(Color.red.opacity(1.0), lineWidth: 3)
-				.frame(width: model.frameSize.width, height: model.frameSize.height)
+			Path { path in
+				path.addRect(model.containerRect)
+			}
+			.stroke(Color.blue.opacity(1.0), lineWidth: 5)
+			Path { path in
+				path.addRect(model.frameRect)
+			}
+			.stroke(Color.red.opacity(1.0), lineWidth: 3)
 		// Framed Structure
 			Path { path in
 				let pts = model.framePoints
@@ -81,6 +83,7 @@ public struct RectangleFramingDiagram: View {
 				path = path.offsetBy(dx: offsetX, dy: offsetY)
 			}
 			.fill(Color.green.opacity(0.2))
+		// Source Info
 			VStack {
 				Text("Source").italic()
 				Text("\(Int(model.sourceSize.width))x\(Int(model.sourceSize.height))")
