@@ -13,7 +13,7 @@ public struct PhotoEditSheet: View {
 
 	@State private var transform: CroppingState
 	@State private var showMarkup: Bool = false
-	@StateObject private var markup = MarkupModel()
+	@StateObject private var markup = MarkupModel2()
 
 	public init(
 			image: UIImage,

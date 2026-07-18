@@ -3,7 +3,7 @@ import SwiftUI
 import PencilKit
 
 @MainActor
-final class MarkupModel: ObservableObject {
+final class MarkupModel2: ObservableObject {
 	@Published var drawing: PKDrawing
 	@Published var canvasView: PKCanvasView
 	let toolPicker: PKToolPicker
