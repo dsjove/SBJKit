@@ -191,9 +191,13 @@ public final class RectangleFraming {
 	}
 
 	public func reset() {
+		mirror.reset()
+		resetPosition()
+	}
+
+	func resetPosition() {
 		magnify = 1.0
 		offset = .zero
-		mirror.reset()
 		rotation = .zero
 	}
 
