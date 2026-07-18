@@ -14,7 +14,7 @@ public struct GeometricMirror: Equatable {
 	public var hasEdits: Bool { horizontal || vertical }
 
 	public var idx: Int {
-		horizontal ? vertical ? 3 : 1 : vertical ? 2 : 0
+		horizontal ? vertical ? 2 : 1 : vertical ? 3 : 0
 	}
 
 	public var next: GeometricMirror {

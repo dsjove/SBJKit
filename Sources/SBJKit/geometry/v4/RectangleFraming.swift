@@ -8,6 +8,7 @@ public final class RectangleFraming {
 	public init(sourceSize: CGSize = .zero, mirrorHorizOnly: Bool = false) {
 		self.sourceSize = sourceSize
 		self.mirror = .init(horizontalOnly: mirrorHorizOnly)
+		recalcSouceBounds()
 	}
 
 	public var sourceSize: CGSize {
