@@ -104,59 +104,59 @@ public struct RectangleFramingGestureModifier: ViewModifier {
 	}
 
 	private func clamp(_ x: CGFloat, min a: CGFloat, max b: CGFloat) -> CGFloat {
-	    return max(a, min(b, x))
+		return max(a, min(b, x))
 	}
 
 	private func deadzone(_ raw: CGFloat, threshold: CGFloat = 0.02) -> CGFloat {
-	    let d = raw - 1.0
-	    return abs(d) < threshold ? 1.0 : raw
+		let d = raw - 1.0
+		return abs(d) < threshold ? 1.0 : raw
 	}
 
 	private func desensitize(_ raw: CGFloat, gain: CGFloat) -> CGFloat {
-	    let d = raw - 1.0
-	    // Map delta to a symmetric log-like curve with stronger compression
-	    let sign: CGFloat = d >= 0 ? 1 : -1
-	    let magnitude = abs(d)
-	    // compress using log1p to reduce sensitivity for larger deltas
-	    let compressed = log1p(magnitude) * 0.6 * gain
-	    return 1.0 + sign * compressed
+		let d = raw - 1.0
+		// Map delta to a symmetric log-like curve with stronger compression
+		let sign: CGFloat = d >= 0 ? 1 : -1
+		let magnitude = abs(d)
+		// compress using log1p to reduce sensitivity for larger deltas
+		let compressed = log1p(magnitude) * 0.6 * gain
+		return 1.0 + sign * compressed
 	}
 
 	private func gainForScale(_ s: CGFloat, min: CGFloat, max: CGFloat) -> CGFloat {
-	    guard max > min else { return 0.25 }
-	    let t = ((s - min) / (max - min)).clamped(to: 0...1)
-	    // lower base gain and reduce at edges
-	    let base: CGFloat = 0.25
-	    let edgeDrop: CGFloat = 0.15
-	    return base + (0.2 * sin(.pi * t)) - (edgeDrop * (abs(t - 0.5) * 2))
+		guard max > min else { return 0.25 }
+		let t = ((s - min) / (max - min)).clamped(to: 0...1)
+		// lower base gain and reduce at edges
+		let base: CGFloat = 0.25
+		let edgeDrop: CGFloat = 0.15
+		return base + (0.2 * sin(.pi * t)) - (edgeDrop * (abs(t - 0.5) * 2))
 	}
 
 	private func onMagnifyChanged(_ raw: CGFloat) {
-	    // 1) Dead-zone near 1.0
-	    let dz = deadzone(raw, threshold: 0.05)
+		// 1) Dead-zone near 1.0
+		let dz = deadzone(raw, threshold: 0.05)
 
-	    // 2) Desensitize with dynamic gain
-	    let gain = gainForScale(baseScale, min: minScale, max: maxScale)
-	    let adjusted = desensitize(dz, gain: gain)
+		// 2) Desensitize with dynamic gain
+		let gain = gainForScale(baseScale, min: minScale, max: maxScale)
+		let adjusted = desensitize(dz, gain: gain)
 
-	    // 3) Clamp effective scale and convert back to delta
-	    let desiredEffective = clamp(baseScale * adjusted, min: minScale, max: maxScale)
-	    let desiredDelta = desiredEffective / baseScale
+		// 3) Clamp effective scale and convert back to delta
+		let desiredEffective = clamp(baseScale * adjusted, min: minScale, max: maxScale)
+		let desiredDelta = desiredEffective / baseScale
 
-	    // 4) Optional smoothing
-	    let smoothing: CGFloat = 0.5
-	    smoothedDelta = smoothedDelta + (desiredDelta - smoothedDelta) * (1 - smoothing)
+		// 4) Optional smoothing
+		let smoothing: CGFloat = 0.5
+		smoothedDelta = smoothedDelta + (desiredDelta - smoothedDelta) * (1 - smoothing)
 
-	    // 5) Publish effective scale to model
-	    model.magnify = clamp(baseScale * smoothedDelta, min: minScale, max: maxScale)
+		// 5) Publish effective scale to model
+		model.magnify = clamp(baseScale * smoothedDelta, min: minScale, max: maxScale)
 	}
 
 	private func onMagnifyEnded() {
-	    // Commit the new base
-	    baseScale = clamp(baseScale * smoothedDelta, min: minScale, max: maxScale)
-	    pinchDelta = 1.0
-	    smoothedDelta = 1.0
-	    model.magnify = baseScale
+		// Commit the new base
+		baseScale = clamp(baseScale * smoothedDelta, min: minScale, max: maxScale)
+		pinchDelta = 1.0
+		smoothedDelta = 1.0
+		model.magnify = baseScale
 	}
 }
 
@@ -166,11 +166,81 @@ public extension View {
 	}
 }
 
+private extension Comparable {
+	func clamped(to r: ClosedRange<Self>) -> Self { min(max(self, r.lowerBound), r.upperBound) }
+}
+
 //MARK: UIImage
 
 public extension UIImage {
+	@MainActor
 	func render(_ model: RectangleFraming) -> UIImage {
-		return self
+		// 1) Determine canvas size
+		let fallbackSize = self.size
+		let canvasSize: CGSize = {
+			if model.positionedSize.width > 0 && model.positionedSize.height > 0 { return model.positionedSize }
+			if model.frameSize.width > 0 && model.frameSize.height > 0 { return model.frameSize }
+			return fallbackSize
+		}()
+
+		// Guard against invalid size
+		guard canvasSize.width > 0, canvasSize.height > 0 else { return self }
+
+		let format = UIGraphicsImageRendererFormat.default()
+		format.scale = self.scale
+		format.opaque = false
+
+		let renderer = UIGraphicsImageRenderer(size: canvasSize, format: format)
+		let image = renderer.image { ctx in
+			let cg = ctx.cgContext
+
+			// UIKit has origin at top-left; CoreGraphics default is bottom-left for images.
+			// We'll flip the context vertically to draw with UIKit-like coordinates.
+			cg.translateBy(x: 0, y: canvasSize.height)
+			cg.scaleBy(x: 1, y: -1)
+
+			// Move origin to center for applying transforms around the center
+			cg.translateBy(x: canvasSize.width / 2, y: canvasSize.height / 2)
+
+			// Apply rotation (Core Graphics uses radians, positive is counter-clockwise)
+			let radians = CGFloat(model.rotation.radians)
+			cg.rotate(by: radians)
+
+			// Apply mirroring if needed
+			let mirrorX: CGFloat = model.mirror.horizontal ? -1 : 1
+			let mirrorY: CGFloat = model.mirror.vertical ? -1 : 1
+			cg.scaleBy(x: mirrorX, y: mirrorY)
+
+			// Apply magnification
+			let mag = max(0.0001, model.magnify)
+			cg.scaleBy(x: mag, y: mag)
+
+			// Apply contained (pixel) offset
+			let off = model.containedOffset
+			cg.translateBy(x: off.width, y: off.height)
+
+			// Decide destination rect to draw the image centered at origin
+			let drawSize: CGSize = {
+				if model.frameSize.width > 0 && model.frameSize.height > 0 {
+					return model.frameSize
+				}
+				return canvasSize
+			}()
+			let destOrigin = CGPoint(x: -drawSize.width / 2, y: -drawSize.height / 2)
+			let destRect = CGRect(origin: destOrigin, size: drawSize)
+
+			// Draw the image
+			if let cgImg = self.cgImage {
+				cg.draw(cgImg, in: destRect)
+			} else {
+				// Fallback to UIImage draw if cgImage is unavailable
+				UIGraphicsPushContext(cg)
+				self.draw(in: destRect)
+				UIGraphicsPopContext()
+			}
+		}
+
+		return image
 	}
 }
 
@@ -258,8 +328,4 @@ public struct RectangleFramingDiagram: View {
 		}
 		.allowsHitTesting(false)
 	}
-}
-
-private extension Comparable {
-	func clamped(to r: ClosedRange<Self>) -> Self { min(max(self, r.lowerBound), r.upperBound) }
 }
