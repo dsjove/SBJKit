@@ -190,6 +190,10 @@ public final class RectangleFraming {
 		positionedSize = CGSize(width: positionedPoints[0].distance(to: positionedPoints[1]), height: positionedPoints[1].distance(to: positionedPoints[2]))
 	}
 
+	var hasEdits: Bool {
+		true
+	}
+
 	public func reset() {
 		mirror.reset()
 		resetPosition()
