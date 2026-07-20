@@ -3,7 +3,7 @@ import PencilKit
 import ImageIO
 import Observation
 
-public struct ImageEditSheet2<Doc: ImageEditSource2>: View {
+public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 	@Environment(\.dismiss) private var dismiss
 
 	let zoomEnabled: Bool
@@ -137,9 +137,9 @@ public struct ImageEditSheet2<Doc: ImageEditSource2>: View {
 							ActionButton(ImageMirror(mirror: geometryModel.mirror)) {
 								geometryModel.flip()
 							}
-//							ActionButton(ImageRotate(clockwise: true)) {
-//								geometryModel.rotate(clockwise: true)
-//							}
+							ActionButton(ImageRotate(clockwise: true)) {
+								geometryModel.rotate(clockwise: true)
+							}
 						}
 						ActionButton(MarkupToolsToggle(enabled: showTools.wrappedValue)) {
 							showTools.wrappedValue.toggle()
