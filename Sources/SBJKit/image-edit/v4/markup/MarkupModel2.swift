@@ -11,7 +11,7 @@ extension PKDrawing {
 
 public extension UIImage {
 	@MainActor
-	func render(_ model: RectangleFraming, overlay: PKDrawing) -> UIImage {
+	func render(_ model: ImageFraming, overlay: PKDrawing) -> UIImage {
 		render(model) {
 			// Composite PKDrawing over the base image in the same transformed space.
 			// We avoid scaling and offset here per the comments; only mirror and rotation are applied by render(model, overlay: () -> ()).

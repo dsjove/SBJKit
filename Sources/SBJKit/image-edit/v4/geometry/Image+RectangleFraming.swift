@@ -1,8 +1,15 @@
 import UIKit
+import SwiftUI
+
+public protocol ImageFraming {
+	var hasEdits: Bool { get }
+	var mirror: GeometricMirror { get }
+	var rotation: Angle { get }
+}
 
 public extension UIImage {
 	@MainActor
-	func render(_ model: RectangleFraming, overlay: (()->())?) -> UIImage {
+	func render(_ model: ImageFraming, overlay: (()->())?) -> UIImage {
 		let base = self.normalizedUp()
 
 		// We do not scale or offset here per the comment. Only mirror and rotate.

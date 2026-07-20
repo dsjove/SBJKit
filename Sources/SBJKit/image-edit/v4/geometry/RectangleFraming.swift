@@ -3,7 +3,7 @@ import Observation
 
 @Observable
 @MainActor
-public final class RectangleFraming {
+public final class RectangleFraming: @MainActor ImageFraming {
 
 	public init(sourceSize: CGSize = .zero, mirrorHorizOnly: Bool = false) {
 		self.sourceSize = sourceSize
@@ -190,7 +190,7 @@ public final class RectangleFraming {
 		positionedSize = CGSize(width: positionedPoints[0].distance(to: positionedPoints[1]), height: positionedPoints[1].distance(to: positionedPoints[2]))
 	}
 
-	var hasEdits: Bool {
+	public var hasEdits: Bool {
 		true
 	}
 
