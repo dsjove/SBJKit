@@ -180,9 +180,16 @@ public final class RectangleFraming: @MainActor ImageFraming {
 	}
 
 	public var containedOffset: CGSize {
-		let toSource = sourceRect.size.scaled(offset)
-		let toframe = toSource.scaled(frameScale)
-		return toframe
+		get {
+			let toSource = sourceRect.size.scaled(offset)
+			let toframe = toSource.scaled(frameScale)
+			return toframe
+		}
+		set {
+			let unscaledFrame = newValue.scaled(1.0 / frameScale)
+			let sourceRecip = CGSize(width: 1 / sourceRect.size.width, height: 1 / sourceRect.size.height)
+			offset = unscaledFrame.scaled(sourceRecip)
+		}
 	}
 
 	private func recalcPositioning() {
@@ -214,3 +221,4 @@ public final class RectangleFraming: @MainActor ImageFraming {
 //	private func clampOffset() {
 //	}
 }
+

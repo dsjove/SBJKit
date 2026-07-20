@@ -27,18 +27,23 @@ public struct GeometricMirror: Equatable {
 	}
 
 	public var next: GeometricMirror {
-		if !horizontal {
-			if !vertical {
-				return .init(horizontal: true, vertical: false)
-			}
-			return .init(horizontal: false, vertical: false)
-		}
-		if vertical {
-			return .init(horizontal: false, vertical: true)
-		}
+		let o = horizontalOnly
+		var h = false
+		var v = false
 		if horizontalOnly {
-			return .init(horizontal: false, vertical: false)
+			h = !horizontal
+		} else {
+			if !horizontal && !vertical {
+				h = true
+			}
+			else if horizontal && !vertical {
+				h = true
+				v = true
+			}
+			else if horizontal && vertical {
+				v = true
+			}
 		}
-		return .init(horizontal: true, vertical: true)
+		return .init(horizontalOnly: o, horizontal: h, vertical: v)
 	}
 }

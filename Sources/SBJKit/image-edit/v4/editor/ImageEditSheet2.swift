@@ -21,7 +21,7 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 		zoomEnabled: Bool = true,
 		cropEnabled: Bool = false,
 		doc: Doc,
-		showTools: Binding<Bool> = .constant(true),
+		showTools: Binding<Bool>,
 		onComplete: ((Doc?) -> Void)? = nil)
 	{
 		self.zoomEnabled = zoomEnabled
@@ -43,37 +43,14 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 
 	public var body: some View {
 		NavigationStack {
-			GeometryReader { geometry in
-				let frameSize = geometryModel.frameSize
+			RectangleFramingView(model: geometryModel) {
 				ZStack {
 					Color.black.ignoresSafeArea()
-					if zoomEnabled && geometryModel.isNotInFrame {
-						Rectangle()
-							.stroke(Color.white.opacity(0.5), style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [6, 6]))
-							.frame(width: frameSize.width, height: frameSize.height)
-							.allowsHitTesting(false)
-					}
-					if cropEnabled {
-						ZStack {
-							Image(uiImage: image)
-								.resizable()
-						}
-						.opacity(0.3)
-						.apply(geometryModel, clip: false)
-					}
-					ZStack {
-						Image(uiImage: image)
-							.resizable()
-						markupModel?.render(contentSize: image.size, fittedSize: frameSize)
-					}
-					.apply(geometryModel, clip: cropEnabled)
-					.gesture(geometryModel, enabled: zoomEnabled && !showTools.wrappedValue)
+					Image(uiImage: image).resizable()
+						.apply(geometryModel)
+						.gesture(geometryModel, enabled: !showTools.wrappedValue)
+//					markupModel?.render(contentSize: image.size, fittedSize: geometryModel.frameSize)
 				}
-				.onChange(of: geometry.size) { _, newSize in
-					geometryModel.containerSize = newSize
-				}
-				.gesture(geometryModel, enabled: zoomEnabled && !showTools.wrappedValue)
-				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 			}
 			.onAppear {
 				markupModel?.onAppear()
@@ -178,5 +155,6 @@ struct PreviewDoc: @MainActor ImageEditDataSource {
 }
 
 #Preview("ImageEditSheet2 Preview") {
-	ImageEditSheet2(doc: PreviewDoc())
+    @Previewable @State var value = false
+	ImageEditSheet2(doc: PreviewDoc(), showTools: $value)
 }
