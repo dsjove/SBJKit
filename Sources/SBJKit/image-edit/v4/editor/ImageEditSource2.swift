@@ -1,5 +1,6 @@
 import PencilKit
 import UIKit
+import SwiftUI
 
 public protocol ImageEditSource2 {
 	var image: UIImage { get }
@@ -44,5 +45,19 @@ public extension ImageEditDataSource2 {
 			return composed.jpegData(compressionQuality: 0.8)
 		}
 		return destinationData as Data
+	}
+
+	func shareItems(subDir: String) -> [Any] {
+		if let url = try? self.shareURL(subDir: subDir) {
+			return [url]
+		}
+		if let image = UIImage(data: self.blob) {
+			return [image]
+		}
+		return [blob]
+	}
+
+	var sharing: ShareItems {
+		(shareItems(subDir: "share"), nil)
 	}
 }

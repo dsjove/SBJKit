@@ -174,6 +174,7 @@ private extension Comparable {
 
 public struct RectangleFramingModifier: ViewModifier {
 	let model: RectangleFraming
+	let clip: Bool
 
 	public func body(content: Content) -> some View {
 		content
@@ -186,8 +187,8 @@ public struct RectangleFramingModifier: ViewModifier {
 }
 
 public extension View {
-	func rectangleFraming(_ model: RectangleFraming) -> some View {
-		modifier(RectangleFramingModifier(model: model))
+	func apply(_ model: RectangleFraming, clip: Bool = false) -> some View {
+		modifier(RectangleFramingModifier(model: model, clip: clip))
 	}
 }
 

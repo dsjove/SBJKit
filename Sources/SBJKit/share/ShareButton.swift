@@ -1,8 +1,6 @@
 #if !os(watchOS)
 import SwiftUI
 
-//TODO: User ShareLink
-
 public typealias ShareItems = (activityItems: [Any], applicationActivities: [UIActivity]?)
 
 public struct ShareButton: View {

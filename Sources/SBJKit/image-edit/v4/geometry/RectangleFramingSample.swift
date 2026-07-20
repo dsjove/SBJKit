@@ -22,7 +22,7 @@ public struct RectangleFramingSample<Content: View>: View {
         let view = ZStack {
             Color.clear
             content()
-                .rectangleFraming(model)
+                .apply(model)
         }
         .frame(width: size.width, height: size.height)
 
@@ -66,7 +66,7 @@ public struct RectangleFramingSample<Content: View>: View {
 			RectangleFramingView(model: model) {
 				ZStack {
 					content()
-						.rectangleFraming(model)
+						.apply(model)
 						.gesture(model, enabled: true)
 					RectangleFramingDiagram(model: model)
 				}

@@ -194,6 +194,11 @@ public final class RectangleFraming: @MainActor ImageFraming {
 		true
 	}
 
+	var isNotInFrame: Bool {
+		//TODO: rotation needs to check remainder against 180
+		offset != .zero || magnify != 1.0 || rotation != .zero
+	}
+
 	public func reset() {
 		mirror.reset()
 		resetPosition()
