@@ -21,7 +21,7 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 		zoomEnabled: Bool = true,
 		cropEnabled: Bool = false,
 		doc: Doc,
-		showTools: Binding<Bool>,
+		showTools: Binding<Bool> = .constant(true),
 		onComplete: ((Doc?) -> Void)? = nil)
 	{
 		self.zoomEnabled = zoomEnabled
@@ -32,7 +32,7 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 		self.onComplete = onComplete
 
 		self._markupModel = .init(initialValue: markupEnabled ? .init(showMarkup: showTools.wrappedValue) : nil)
-		self._geometryModel = .init(initialValue: .init(sourceSize: image.size))
+		self._geometryModel = .init(initialValue: .init(sourceSize: image.size, mirrorHorizOnly: true))
 	}
 
 	var editedDoc: Doc {
@@ -57,8 +57,6 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 						ZStack {
 							Image(uiImage: image)
 								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.frame(width: frameSize.width, height: frameSize.height)
 						}
 						.opacity(0.3)
 						.apply(geometryModel, clip: false)
@@ -66,11 +64,10 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 					ZStack {
 						Image(uiImage: image)
 							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: frameSize.width, height: frameSize.height)
 						markupModel?.render(contentSize: image.size, fittedSize: frameSize)
 					}
 					.apply(geometryModel, clip: cropEnabled)
+					.gesture(geometryModel, enabled: zoomEnabled && !showTools.wrappedValue)
 				}
 				.onChange(of: geometry.size) { _, newSize in
 					geometryModel.containerSize = newSize
@@ -151,4 +148,35 @@ public struct ImageEditSheet2<Doc: ImageEditSource>: View {
 			}
 		}
 	}
+}
+
+struct PreviewDoc: @MainActor ImageEditDataSource {
+	let blob: Data
+	let utiType: String
+	let name: String
+
+	init() {
+		let configuration = UIImage.SymbolConfiguration(
+			pointSize: 718,
+			weight: .regular,
+			scale: .large
+		)
+
+		let previewImage = UIImage(
+			systemName: "photo.fill",
+			withConfiguration: configuration
+		)!
+
+		self.init(blob: previewImage.jpegData(compressionQuality: 1.0)!, name: "Preview", utiType: "public.image")
+	}
+
+	init(blob: Data, name: String, utiType: String) {
+		self.blob = blob
+		self.name = name
+		self.utiType = utiType
+	}
+}
+
+#Preview("ImageEditSheet2 Preview") {
+	ImageEditSheet2(doc: PreviewDoc())
 }
