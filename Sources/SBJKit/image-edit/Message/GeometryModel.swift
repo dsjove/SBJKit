@@ -178,44 +178,6 @@ public class GeometryModel {
 
 //MARK: Geometry
 	public func doRotate(_ clockwise: Bool = true) {
-//		// Preserve crop center focus by adjusting offset based on rotation
-//		let crop = self.frameSize
-//		// 1. Calculate the center point of the cropping rect
-//		let cropCenter = CGPoint(x: crop.width / 2, y: crop.height / 2)
-//
-//		// 2. Compute current image size and center in the crop coordinate space
-//		let renderScale = min(crop.width / contentSize.width, crop.height / contentSize.height)
-//		let w = contentSize.width * renderScale * scale
-//		let h = contentSize.height * renderScale * scale
-//		let x = (crop.width - w) / 2 + offset.width
-//		let y = (crop.height - h) / 2 + offset.height
-//		let imageCenterInCrop = CGPoint(x: x + w / 2, y: y + h / 2)
-//
-//		// 3. Compute the vector from crop center to image center
-//		let vector = CGPoint(x: imageCenterInCrop.x - cropCenter.x, y: imageCenterInCrop.y - cropCenter.y)
-//
-//		// 4. Rotate this vector by ±90 degrees (depending on clockwise)
-//		let angle = clockwise ? Double.pi / 2 : -Double.pi / 2
-//		let rotatedVector = CGPoint(
-//			x: vector.x * CoreGraphics.cos(angle) - vector.y * CoreGraphics.sin(angle),
-//			y: vector.x * CoreGraphics.sin(angle) + vector.y * CoreGraphics.cos(angle)
-//		)
-//
-//		// 5. Compute the new image center after rotation
-//		let newImageCenter = CGPoint(x: cropCenter.x + rotatedVector.x, y: cropCenter.y + rotatedVector.y)
-//
-//		// 6. Update the offset so that image remains centered on the new rotated position
-//		// Note: width and height swap roles due to rotation of 90 degrees
-//		let newOffset = CGSize(
-//			width: newImageCenter.x - (crop.width - h) / 2 - w / 2,
-//			height: newImageCenter.y - (crop.height - w) / 2 - h / 2
-//		)
-//		offset = newOffset
-//		lastOffset = offset
-//
-//		// Perform the rotation increment and clamp offset accordingly
-		rotation += .init(degrees: clockwise ? 90 : -90)
-//		setClampedOffset(offset)
 	}
 
 	private func setClampedOffset(_ value: CGSize) {

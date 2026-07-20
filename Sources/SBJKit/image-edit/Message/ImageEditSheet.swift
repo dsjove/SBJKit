@@ -71,17 +71,6 @@ public struct ImageEditSheet<Doc: ImageEditSource>: View {
 						markupModel?.render(contentSize: image.size, fittedSize: frameSize)
 					}
 					.apply(geometryModel, clip: cropEnabled)
-//					Rectangle()
-//						.stroke(Color.blue.opacity(0.5), lineWidth: 3)
-//						.frame(width: geometryModel.containerSize.width, height: geometryModel.containerSize.height)
-//					Rectangle()
-//						.stroke(Color.white.opacity(0.5), lineWidth: 3)
-//						.frame(width: geometryModel.frameSize.width, height: geometryModel.frameSize.height)
-//					Rectangle()
-//						.stroke(Color.orange.opacity(0.8), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-//						.frame(width: geometryModel.boundingSize.width, height: geometryModel.boundingSize.height)
-
-
 				}
 				.onChange(of: geometry.size) { _, newSize in
 					geometryModel.containerSize = newSize

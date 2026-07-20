@@ -9,6 +9,23 @@ extension PKDrawing {
 	}
 }
 
+public extension UIImage {
+	@MainActor
+	func render(_ model: RectangleFraming, overlay: PKDrawing) -> UIImage {
+		render(model) {
+			// Composite PKDrawing over the base image in the same transformed space.
+			// We avoid scaling and offset here per the comments; only mirror and rotation are applied by render(model, overlay: () -> ()).
+			let rect = CGRect(origin: .zero, size: self.size)
+			let scale = UIScreen.main.scale
+			let overlayImage = overlay.image(from: rect, scale: scale)
+			overlayImage.draw(in: CGRect(x: -self.size.width / 2,
+										 y: -self.size.height / 2,
+										 width: self.size.width,
+										 height: self.size.height))
+		}
+	}
+}
+
 @MainActor
 @Observable
 final class MarkupModel {
@@ -17,7 +34,7 @@ final class MarkupModel {
 			ensureToolPickerVisible(showMarkup)
 		}
 	}
-	
+
 	private var drawing: PKDrawing = PKDrawing() {
 		didSet {
 			updateUndoState()
@@ -140,3 +157,4 @@ final class MarkupModel {
 		}
 	}
 }
+
