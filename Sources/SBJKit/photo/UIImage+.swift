@@ -5,10 +5,17 @@ public typealias IdentifiableImage = Identified<UIImage>
 
 public extension UIImage {
 	convenience init?(data: Data?) {
-		guard let data = data else {
+		guard let data else {
 			return nil
 		}
 		self.init(data: data)
+	}
+
+	convenience init?(url: URL?) {
+		guard let url else {
+			return nil
+		}
+		self.init(contentsOfFile: url.path())
 	}
 
 	func normalizedUp() -> UIImage {
