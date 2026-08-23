@@ -42,7 +42,6 @@ public enum ImageSource: Sendable {
 	}
 }
 
-
 public enum ImageName {
 	case none
 	case bundled(String, Bundle? = nil)

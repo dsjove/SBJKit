@@ -15,7 +15,11 @@ public extension UIImage {
 		guard let url else {
 			return nil
 		}
-		self.init(contentsOfFile: url.path())
+		let didAccess = url.startAccessingSecurityScopedResource()
+		defer {
+			if didAccess { url.stopAccessingSecurityScopedResource() }
+		}
+		self.init(contentsOfFile: url.path)
 	}
 
 	func normalizedUp() -> UIImage {
