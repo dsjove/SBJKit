@@ -11,17 +11,6 @@ public extension UIImage {
 		self.init(data: data)
 	}
 
-	convenience init?(url: URL?) {
-		guard let url else {
-			return nil
-		}
-		let didAccess = url.startAccessingSecurityScopedResource()
-		defer {
-			if didAccess { url.stopAccessingSecurityScopedResource() }
-		}
-		self.init(contentsOfFile: url.path)
-	}
-
 	func normalizedUp() -> UIImage {
 		if imageOrientation == .up { return self }
 		let format = UIGraphicsImageRendererFormat()
