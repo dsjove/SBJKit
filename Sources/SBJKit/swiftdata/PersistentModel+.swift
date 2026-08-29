@@ -1,7 +1,8 @@
 import Foundation
 import SwiftData
+import SBJStructure
 
-extension Schema.Version: DefaultsStorageValue {
+extension Schema.Version: @retroactive DefaultsStorageValue {
 	public init?(from description: String?) {
 		guard let description, !description.isEmpty else { return nil }
 		let parts = description.split(separator: ".", omittingEmptySubsequences: false)

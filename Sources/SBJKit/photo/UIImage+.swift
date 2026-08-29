@@ -1,5 +1,6 @@
 import UIKit
 import Foundation
+import SBJStructure
 
 public typealias IdentifiableImage = Identified<UIImage>
 

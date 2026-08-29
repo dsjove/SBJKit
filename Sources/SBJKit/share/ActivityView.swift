@@ -1,4 +1,5 @@
 import SwiftUI
+import SBJStructure
 
 public typealias SharePayload = Identified<[URL]>
 
