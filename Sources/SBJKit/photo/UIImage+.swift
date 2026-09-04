@@ -1,17 +1,8 @@
 import UIKit
 import Foundation
-import SBJStructure
-
-public typealias IdentifiableImage = Identified<UIImage>
+import SBJFoundation
 
 public extension UIImage {
-	convenience init?(data: Data?) {
-		guard let data else {
-			return nil
-		}
-		self.init(data: data)
-	}
-
 	func normalizedUp() -> UIImage {
 		if imageOrientation == .up { return self }
 		let format = UIGraphicsImageRendererFormat()

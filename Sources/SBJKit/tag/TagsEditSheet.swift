@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import SBJFoundation
 
 public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 	typealias Tag = T.Tag

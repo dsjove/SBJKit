@@ -1,5 +1,7 @@
 import SwiftUI
+import SBJFoundation
 
+//TODO: appears to not be used
 private struct NavigationTitleHighlighted: ViewModifier {
 	let alerted: Bool
 
@@ -18,18 +20,5 @@ private struct NavigationTitleHighlighted: ViewModifier {
 public extension View {
 	 func navigationTitle(alerted: Bool = false) -> some View {
 		modifier(NavigationTitleHighlighted(alerted: alerted))
-	}
-}
-
-public extension View {
-	func oneLiner() -> some View {
-		self
-			.focusedHighlight()
-			#if !os(watchOS)
-			.textFieldStyle(.roundedBorder)
-			#endif
-			.multilineTextAlignment(.leading)
-			.lineLimit(1)
-			.submitLabel(.done)
 	}
 }

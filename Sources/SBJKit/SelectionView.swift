@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import SBJFoundation
 
 public struct SelectionView<Element: Identifiable, Label: View>: View {
 	@Environment(\.dismiss) private var dismiss

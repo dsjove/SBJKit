@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import SwiftData
+import SBJFoundation
 
 public protocol PhotoSource: AnyObject {
 	var placeholderPhoto: ImageName { get }

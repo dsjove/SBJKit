@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Foundation
+import SBJFoundation
 
 @MainActor
 public final class TagBagSwiftData<F>: ObservableObject, @MainActor TagBag

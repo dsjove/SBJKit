@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
-import SBJStructure
+import SBJFoundation
 
 extension Schema.Version: @retroactive DefaultsStorageValue {
 	public init?(from description: String?) {

@@ -1,6 +1,6 @@
 #if !os(watchOS)
 import SwiftUI
-import SBJStructure
+import SBJFoundation
 
 extension FixedWidthInteger {
 	var singleBitValue: Self? {

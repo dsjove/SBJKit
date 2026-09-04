@@ -1,4 +1,5 @@
 import SwiftUI
+import SBJFoundation
 
 extension AppInfo {
 	public static let companyName = "Software by Jove"

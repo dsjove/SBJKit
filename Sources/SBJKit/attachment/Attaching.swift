@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
+import SBJFoundation
 
 public protocol Attaching:
 	AnyObject,
