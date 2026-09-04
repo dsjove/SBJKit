@@ -75,7 +75,7 @@ public struct PhotoMenuOptions: OptionSet, Sendable {
 public struct _DefaultPhotoImportMenuLabel: View {
 	let isFilled: Bool
 	public var body: some View {
-		Image(systemName: isFilled ? "photo.fill" : "photo")
+		Image(.system(isFilled ? "photo.fill" : "photo"))
 			.controlSize(.regular)
 			.buttonStyle(.borderedProminent)
 			.accessibilityAddTraits(.isButton)
@@ -169,7 +169,7 @@ public struct PhotoImportMenu<Content: View>: View {
 			Button(role: .destructive) {
 				state.isPhotoClearPresented = true
 			} label: {
-				Label("Clear", systemImage: "trash")
+				Label("Clear", image: .system("trash"))
 			}
 		}
 	}

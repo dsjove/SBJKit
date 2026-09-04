@@ -1,5 +1,6 @@
 #if !os(watchOS)
 import SwiftUI
+import SBJFoundation
 import UIKit
 import WebKit
 import ObjectiveC
@@ -76,7 +77,7 @@ fileprivate struct ScrollableIndicatorView: View {
 			Circle()
 				.stroke(Color.primary.opacity(0.5))
 				.frame(width: 32, height: 32)
-			Image(systemName: isAtBottom ? "chevron.up.2" : "chevron.down")
+			Image(.system(isAtBottom ? "chevron.up.2" : "chevron.down"))
 				.font(.system(size: 16, weight: .semibold))
 				.foregroundColor(Color.primary.opacity(0.5))
 		}

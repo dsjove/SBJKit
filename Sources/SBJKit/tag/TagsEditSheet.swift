@@ -85,7 +85,7 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										Button {
 											user.togglePrimary(tag)
 										} label: {
-											Image(systemName: user.isTagPrimary(tag) ? "star.fill" : "star")
+											Image(.system(user.isTagPrimary(tag) ? "star.fill" : "star"))
 											.imageScale(.large)
 										}
 										.buttonStyle(.plain)

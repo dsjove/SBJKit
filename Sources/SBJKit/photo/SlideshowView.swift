@@ -1,4 +1,5 @@
 import SwiftUI
+import SBJFoundation
 internal import Combine
 
 public protocol SlideView: View {
@@ -39,7 +40,7 @@ public struct SlideshowView<Content: SlideView>: View {
 						onDismiss()
 						dismiss()
 					} label: {
-						Label("Close", systemImage: "xmark.circle")
+						Label("Close", image: .system("xmark.circle"))
 							.font(.title2)
 					}
 					.padding(.bottom, 40)
@@ -69,26 +70,26 @@ public struct SlideshowView<Content: SlideView>: View {
 								onDismiss()
 								dismiss()
 							} label: {
-								Image(systemName: "xmark.circle")
+								Image(.system("xmark.circle"))
 									.font(.title2)
 							}
 							Spacer()
 							Button {
 								index = index == 0 ? elements.count - 1 : (index - 1) % elements.count
 							} label: {
-								Image(systemName: "arrow.left.circle")
+								Image(.system("arrow.left.circle"))
 									.font(.title2)
 							}
 							Button {
 								isPlaying.toggle()
 							} label: {
-								Image(systemName: isPlaying ? "pause.circle" : "play.circle")
+								Image(.system(isPlaying ? "pause.circle" : "play.circle"))
 									.font(.title2)
 							}
 							Button {
 								index = (index + 1) % elements.count
 							} label: {
-								Image(systemName: "arrow.right.circle")
+								Image(.system("arrow.right.circle"))
 									.font(.title2)
 							}
 						}

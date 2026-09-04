@@ -1,4 +1,5 @@
 import SwiftUI
+import SBJFoundation
 
 #if !os(macOS)
 
@@ -7,8 +8,8 @@ public struct CheckboxToggleStyle: ToggleStyle {
 		HStack {
 			configuration.label
 			Spacer()
-			Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
-				.foregroundColor(configuration.isOn ? .accentColor : .secondary)
+			Image(.system(configuration.isOn ? "checkmark.square.fill" : "square"))
+				.foregroundStyle(configuration.isOn ? SBJUIAppearance.activeControlColor : SBJUIAppearance.inactiveControlColor)
 				.imageScale(.large)
 				.onTapGesture {
 					configuration.isOn.toggle()

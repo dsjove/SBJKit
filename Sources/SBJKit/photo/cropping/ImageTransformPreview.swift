@@ -1,5 +1,6 @@
 #if !os(watchOS)
 import SwiftUI
+import SBJFoundation
 
 public struct ImageTransformPreview: View {
 	private let image: UIImage?
@@ -28,7 +29,7 @@ public struct ImageTransformPreview: View {
 						.geometryEffect(transform, clip: false)
 				}
 			} else {
-				Image(systemName: "photo")
+				Image(.system("photo"))
 					.foregroundStyle(.primary)
 					.font(.largeTitle)
 			}

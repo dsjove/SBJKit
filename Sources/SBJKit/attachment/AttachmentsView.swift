@@ -37,7 +37,7 @@ public struct AttachmentsView<Owner: AttachmentOwner & Observable>: View {
 						Button {
 							openAttachment(attachment)
 						} label: {
-							Image(systemName: "chevron.right")
+							Image(.system("chevron.right"))
 								.font(.body.weight(.semibold))
 						}
 						.buttonStyle(.plain)

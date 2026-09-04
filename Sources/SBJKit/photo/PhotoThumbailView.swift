@@ -1,5 +1,6 @@
 #if !os(watchOS)
 import SwiftUI
+import SBJFoundation
 import UIKit
 import SwiftData
 
@@ -30,7 +31,7 @@ public struct PhotoThumbailView<Source: PhotoSource>: View {
 				source.thumbnailView(size: size)
 			}
 			else {
-				Image(systemName: "photo")
+				Image(.system("photo"))
 					.resizable()
 					.scaledToFit()
 					.frame(width: size.width, height: size.height)

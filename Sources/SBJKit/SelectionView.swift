@@ -167,13 +167,13 @@ public struct SelectionView<Element: Identifiable, Label: View>: View {
 		var body: some View {
 			HStack {
 				if isInit {
-					Image(systemName: "circle.fill")
+					Image(.system("circle.fill"))
 						.imageScale(.small)
 				}
 				label()
 				Spacer()
 				if selected?.id == element.id {
-					Image(systemName: "checkmark")
+					Image(.system("checkmark"))
 	#if !os(watchOS)
 						.foregroundStyle(.selection)
 	#endif
