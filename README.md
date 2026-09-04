@@ -91,3 +91,8 @@ to persist across refactors.
 
 Design and architecture documents belong in `Documents/`. See [Documents/README.md](Documents/README.md)
 for current architectural notes. Keep the root README focused on framework purpose and boundaries.
+
+
+## Unit conversion
+
+SBJKit hosts the higher-level reusable conversion workflow (`UnitConversionModel`, `UnitConversionView`, and `UnitConversionToolView`). Physical unit identity, Codable `UnitValue`, conversion math, and generic unit editing remain in SBJFoundation. Apps supply domain-specific preferred units and editing-step policy.
