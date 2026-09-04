@@ -13,3 +13,6 @@ architecture and migration notes as its stable subsystems emerge.
 
 No formal testing design is being established yet; the framework is intentionally too volatile to
 freeze those APIs with broad tests.
+
+
+- [Pre-localization audit](PRELOCALIZATION_AUDIT.md)

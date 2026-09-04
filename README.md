@@ -89,7 +89,7 @@ to persist across refactors.
 
 ## Documentation convention
 
-Design and architecture documents belong in `Documents/`. See [Documents/README.md](Documents/README.md)
+Design and architecture documents belong in `Documentation/`. See [Documentation/README.md](Documentation/README.md)
 for current architectural notes. Keep the root README focused on framework purpose and boundaries.
 
 
