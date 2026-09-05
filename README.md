@@ -87,12 +87,22 @@ ownership, source organization, and application usage over tests that would simp
 APIs. Add focused tests later when a subsystem becomes stable enough that its behavior is intended
 to persist across refactors.
 
-## Documentation convention
-
-Design and architecture documents belong in `Documentation/`. See [Documentation/README.md](Documentation/README.md)
-for current architectural notes. Keep the root README focused on framework purpose and boundaries.
-
 
 ## Unit conversion
 
 SBJKit hosts the higher-level reusable conversion workflow (`UnitConversionModel`, `UnitConversionView`, and `UnitConversionToolView`). Physical unit identity, Codable `UnitValue`, conversion math, and generic unit editing remain in SBJFoundation. Apps supply domain-specific preferred units and editing-step policy.
+
+## Presentation/localization boundary
+
+SBJKit does not define a parallel localization architecture. Reusable workflows consume SBJFoundation presentation resources and should accept semantic/localizable resources when the workflow owns reusable copy, while application-owned vocabulary remains supplied by the caller.
+
+The completed source audit leaves these concrete seams:
+
+- `UnitConversionView` currently uses direct number formatting as a temporary presentation path; final numeric/unit presentation belongs to SBJFoundation's shared formatting/resource context.
+- `HelpSheet` uses `UIImage(systemName:)` only at an HTML/WebKit rasterization boundary; this is a concrete rendering operation rather than SwiftUI semantic-image leakage.
+- Alerts and accessibility copy in reusable tag/photo/attachment/delete/selection workflows are eventual clients of SBJFoundation presentation resources.
+- `oldPDF (useSBJLayout)` is legacy migration debt. Add no localization or presentation-resource architecture there.
+- `View+navigationTitle.swift` remains a deletion candidate after downstream-use verification.
+
+The former `Documentation/PRELOCALIZATION_AUDIT.md` and documentation-index file were removed after these durable findings were incorporated here. SBJKit currently has no separate design-document tree because there is no additional stable subsystem design to justify one.
+
