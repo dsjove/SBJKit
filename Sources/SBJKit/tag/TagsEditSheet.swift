@@ -52,7 +52,6 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 											get: { tag.name },
 											set: { tag.name = $0 }
 										))
-										.focused($isTagFieldFocused, equals: tag.id)
 										.submitLabel(.done)
 										.onSubmit {
 											isTagFieldFocused = nil
@@ -61,7 +60,7 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										.autocapitalization(.none)
 	#endif
 										.disableAutocorrection(true)
-										.focusedHighlight()
+										.sbjFocusedControl(isFocused: $isTagFieldFocused, id: tag.id)
 
 										if !tag.isSoleUser(user) {
 											Text("(\(tag.userCount))")
