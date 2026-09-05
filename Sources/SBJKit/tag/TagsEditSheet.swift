@@ -54,7 +54,7 @@ public struct TagsEditSheet<T: TagUser, B: TagBag> : View where T.Tag == B.Tag {
 										))
 										.submitLabel(.done)
 										.onSubmit {
-											isTagFieldFocused = nil
+												isTagFieldFocused = nil
 										}
 	#if !os(watchOS)
 										.autocapitalization(.none)
