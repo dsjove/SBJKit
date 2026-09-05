@@ -3,6 +3,10 @@
 SBJKit is currently a volatile higher-level application framework. This directory is reserved for
 architecture and migration notes as its stable subsystems emerge.
 
+## Shared localization design
+
+The canonical localization/presentation-resource design is maintained in `SBJFoundation/Documentation/LOCALIZATION_AND_PRESENTATION_RESOURCES.md`. SBJKit should not grow a parallel localization design; its pre-localization audit is an inventory only.
+
 ## Current architectural notes
 
 - `Sources/SBJKit/oldPDF (useSBJLayout)/` is legacy migration debt. New newspaper/print PDF work

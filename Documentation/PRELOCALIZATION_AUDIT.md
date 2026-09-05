@@ -1,5 +1,7 @@
 # Pre-Localization Audit
 
+> **Non-normative inventory/checklist.** Canonical localization and presentation-resource design lives in `SBJFoundation/Documentation/LOCALIZATION_AND_PRESENTATION_RESOURCES.md`.
+
 ## Formatting and locale
 
 The new unit-conversion UI currently uses `.formatted(.number)` directly. That is an intentional placeholder; final numeric/unit presentation should come from SBJFoundation presentation-resource/formatting policy.
